@@ -13,6 +13,3 @@ target/
 /.sccache/
 .soroban
 .stellar
-
-# temporary
-contracts/hello-world/
