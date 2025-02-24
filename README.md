@@ -9,7 +9,7 @@ This repository uses the recommended structure for a Soroban project:
 ```text
 .
 ├── contracts
-│   └── hello_world
+│   └── sink_carbon
 │       ├── src
 │       │   ├── lib.rs
 │       │   └── test.rs
@@ -56,7 +56,7 @@ cargo install --locked stellar-cli --features opt
 Then build an optimized `.wasm` file:
 
 ```sh
-stellar contract optimize --wasm target/wasm32-unknown-unknown/release/hello_world.wasm
+stellar contract optimize --wasm target/wasm32-unknown-unknown/release/sink_carbon.wasm
 ```
 
-This will optimize and output a new `hello_world.optimized.wasm` file in the same location as the input `.wasm`.
+This will optimize and output a new `sink_carbon.optimized.wasm` file in the same location as the input `.wasm`.
