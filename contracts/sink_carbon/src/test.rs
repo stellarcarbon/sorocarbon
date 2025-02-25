@@ -7,10 +7,11 @@ use soroban_sdk::{testutils::Address as _, Address, vec, Env, String};
 fn test() {
     let env = Env::default();
     let admin = Address::generate(&env);
+    let carbon_sac = Address::generate(&env);
     let carbonsink_sac = Address::generate(&env);
     let contract_id = env.register(
         SinkContract, 
-        (admin, carbonsink_sac)
+        (admin, carbon_sac, carbonsink_sac)
     );
     let client = SinkContractClient::new(&env, &contract_id);
 

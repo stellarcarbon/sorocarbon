@@ -4,6 +4,7 @@ use soroban_sdk::contracttype;
 #[contracttype]
 pub enum DataKey {
     Admin,
+    CarbonID,
     CarbonSinkID,
     IsActive,
 }
