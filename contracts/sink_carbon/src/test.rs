@@ -4,7 +4,7 @@ use super::*;
 use soroban_sdk::{testutils::Address as _, Address, vec, Env, String};
 
 #[test]
-fn test() {
+fn test_sink_carbon_happy() {
     let env = Env::default();
     let admin = Address::generate(&env);
     let carbon_sac = Address::generate(&env);

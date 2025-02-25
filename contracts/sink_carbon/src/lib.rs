@@ -1,6 +1,10 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, token::{TokenClient, StellarAssetClient}, vec, Address, Env, String, Symbol, Vec};
+use soroban_sdk::{
+    contract, contractimpl, 
+    token::{TokenClient, StellarAssetClient}, 
+    vec, Address, Env, String, Symbol, Vec
+};
 
 use crate::storage_types::DataKey;
 
