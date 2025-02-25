@@ -3,7 +3,7 @@
 use soroban_sdk::{
     contract, contractimpl, 
     token::{TokenClient, StellarAssetClient}, 
-    vec, Address, Env, String, Symbol, Vec
+    Address, Env, String, Symbol,
 };
 
 use crate::storage_types::DataKey;
@@ -41,10 +41,6 @@ impl SinkContract {
         carbonsink_client.set_authorized(&recipient, &true);
         carbonsink_client.mint(&recipient, &amount.into());
         carbonsink_client.set_authorized(&recipient, &false);
-    }
-
-    pub fn hello(env: Env, to: String) -> Vec<String> {
-        vec![&env, String::from_str(&env, "Hello"), to]
     }
 }
 
