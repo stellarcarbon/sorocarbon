@@ -47,6 +47,8 @@ stellar contract build
 
 If you get an error like `can't find crate for 'core'`, it means you didn't install the wasm32 target during the [Soroban setup](https://developers.stellar.org/docs/build/smart-contracts/getting-started/setup). You can fix it by running `rustup target add wasm32-unknown-unknown`.
 
+### Optimization
+
 Use `stellar contract optimize` to further minimize the size of the `.wasm`. First, re-install stellar-cli with the `opt` feature:
 
 ```sh
