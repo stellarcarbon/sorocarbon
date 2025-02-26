@@ -172,3 +172,50 @@ fn test_sink_carbon_twice() {
     assert_eq!(carbon_client.balance(&funder), 6_000_000);
     assert_eq!(carbonsink_client.balance(&funder), 4_000_000);
 }
+
+#[test]
+fn test_sink_carbon_separate_recipient() {
+    let setup = set_up_contracts_and_funder(10_000_000);
+    let env = setup.env;
+    let funder = setup.funder;
+    let recipient = Address::generate(&env);
+    let carbon_sac = setup.carbon_sac;
+    let carbonsink_sac = setup.carbonsink_sac;
+    let contract_id = setup.contract_id;
+
+    // have the funder sink 0.333 CARBON for the recipient
+    let client = SinkContractClient::new(&env, &contract_id);
+    let amount = 3_330_000_i64;
+    let project_id = Symbol::new(&env,"OFP1234567890");
+    let memo_text = String::from_str(&env,"333 kg 🍄‍🟫🍄🍄‍🟫");
+    let email = String::from_str(&env, "");
+    client
+        .mock_auths(&[MockAuth {
+            address: &funder,
+            invoke: &MockAuthInvoke {
+                contract: &contract_id,
+                fn_name: "sink_carbon",
+                args: (
+                    funder.clone(), recipient.clone(), amount, 
+                    project_id.clone(), memo_text.clone(), email.clone()
+                ).into_val(&env),
+                sub_invokes: &[MockAuthInvoke {
+                    contract: &carbon_sac.address(),
+                    fn_name: "burn",
+                    args: (&funder, &3_330_000_i128).into_val(&env),
+                    sub_invokes: &[],
+                }],
+            },
+        }])
+        .sink_carbon(
+            &funder, &recipient, &amount, &project_id, &memo_text, &email
+        );
+
+    // assert the effect on balances
+    let carbon_client = TokenClient::new(&env, &carbon_sac.address());
+    let carbonsink_client = TokenClient::new(&env, &carbonsink_sac.address());
+    assert_eq!(carbon_client.balance(&funder), 6_670_000);
+    assert_eq!(carbon_client.balance(&recipient), 0);
+    assert_eq!(carbonsink_client.balance(&funder), 0);
+    assert_eq!(carbonsink_client.balance(&recipient), 3_330_000);
+}
