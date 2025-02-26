@@ -48,3 +48,4 @@ impl SinkContract {
 
 mod storage_types;
 mod test;
+mod fixtures;
