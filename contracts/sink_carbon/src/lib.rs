@@ -6,7 +6,11 @@ use soroban_sdk::{
     Address, Env, String, Symbol,
 };
 
-use crate::storage_types::DataKey;
+use crate::storage_types::{DataKey, INSTANCE_TTL_THRESHOLD, INSTANCE_EXTEND_AMOUNT};
+
+pub fn extend_instance_ttl(env: &Env) {
+    env.storage().instance().extend_ttl(INSTANCE_TTL_THRESHOLD, INSTANCE_EXTEND_AMOUNT);
+}
 
 #[contract]
 pub struct SinkContract;
@@ -29,6 +33,8 @@ impl SinkContract {
         _memo_text: String,
         _email: String,
     ) {
+        extend_instance_ttl(&env);
+
         // `funder` burns `amount` of CARBON
         funder.require_auth();
         let carbon_id = env.storage().instance().get(&DataKey::CarbonID).unwrap();
