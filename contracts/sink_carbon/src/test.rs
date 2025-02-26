@@ -2,12 +2,19 @@
 
 use super::*;
 use soroban_sdk::{
-    testutils::{Address as _, IssuerFlags, MockAuth, MockAuthInvoke}, 
+    testutils::{Address as _, IssuerFlags, MockAuth, MockAuthInvoke, StellarAssetContract}, 
     Address, Env, IntoVal, String, Symbol,
 };
 
-#[test]
-fn test_sink_carbon_happy() {
+struct Setup {
+    env: Env,
+    funder: Address,
+    carbon_sac: StellarAssetContract,
+    carbonsink_sac: StellarAssetContract,
+    contract_id: Address,
+}
+
+fn set_up_contracts_and_funder(funder_balance: i128) -> Setup {
     let env = Env::default();
     let funder = Address::generate(&env);
     let carbon_issuer = Address::generate(&env);
@@ -44,11 +51,23 @@ fn test_sink_carbon_happy() {
             invoke: &MockAuthInvoke {
                 contract: &carbon_sac.address(),
                 fn_name: "mint",
-                args: (&funder, &10_000_000_i128).into_val(&env),
+                args: (&funder, &funder_balance).into_val(&env),
                 sub_invokes: &[],
             },
         }])
-        .mint(&funder, &10_000_000);
+        .mint(&funder, &funder_balance);
+
+    Setup {env, funder, carbon_sac, carbonsink_sac, contract_id}
+}
+
+#[test]
+fn test_sink_carbon_happy() {
+    let setup = set_up_contracts_and_funder(10_000_000);
+    let env = setup.env;
+    let funder = setup.funder;
+    let carbon_sac = setup.carbon_sac;
+    let carbonsink_sac = setup.carbonsink_sac;
+    let contract_id = setup.contract_id;
 
     // have the funder sink 0.1 CARBON
     let client = SinkContractClient::new(&env, &contract_id);
