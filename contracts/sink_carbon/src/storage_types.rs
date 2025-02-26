@@ -1,4 +1,4 @@
-use soroban_sdk::contracttype;
+use soroban_sdk::{contracttype, Env};
 
 pub(crate) const DAY_IN_LEDGERS: u32 = 17280;
 pub(crate) const INSTANCE_EXTEND_AMOUNT: u32 = 30 * DAY_IN_LEDGERS;
@@ -11,4 +11,8 @@ pub enum DataKey {
     CarbonID,
     CarbonSinkID,
     IsActive,
+}
+
+pub fn extend_instance_ttl(env: &Env) {
+    env.storage().instance().extend_ttl(INSTANCE_TTL_THRESHOLD, INSTANCE_EXTEND_AMOUNT);
 }

@@ -6,11 +6,7 @@ use soroban_sdk::{
     Address, Env, String, Symbol,
 };
 
-use crate::storage_types::{DataKey, INSTANCE_TTL_THRESHOLD, INSTANCE_EXTEND_AMOUNT};
-
-pub fn extend_instance_ttl(env: &Env) {
-    env.storage().instance().extend_ttl(INSTANCE_TTL_THRESHOLD, INSTANCE_EXTEND_AMOUNT);
-}
+use crate::storage_types::{DataKey, extend_instance_ttl};
 
 #[contract]
 pub struct SinkContract;
