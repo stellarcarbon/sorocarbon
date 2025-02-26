@@ -25,9 +25,9 @@ impl SinkContract {
         funder: Address, 
         recipient: Address, 
         amount: i64, 
-        project_id: Symbol,
-        memo_text: String,
-        email: String,
+        _project_id: Symbol,
+        _memo_text: String,
+        _email: String,
     ) {
         // `funder` burns `amount` of CARBON
         funder.require_auth();
