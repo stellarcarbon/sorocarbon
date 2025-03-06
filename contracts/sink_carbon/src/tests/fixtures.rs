@@ -12,6 +12,7 @@ pub struct Setup<'a> {
     pub env: Env,
     pub funder: Address,
     pub carbon_sac: StellarAssetContract,
+    pub carbonsink_issuer: Address,
     pub carbonsink_sac: StellarAssetContract,
     pub contract_id: Address,
     pub sink_client: SinkContractClient<'a>,
@@ -20,10 +21,11 @@ pub struct Setup<'a> {
 pub fn set_up_contracts_and_funder<'a>(funder_balance: i128) -> Setup<'a> {
     let env = Env::default();
     let funder = Address::generate(&env);
-    let carbon_issuer = Address::generate(&env);
-    let carbonsink_issuer = Address::generate(&env);
+    let carbon_issuer = Address::generate(&env);  // this is a C-address
+    let carbonsink_issuer = Address::generate(&env);  // this is a C-address
     let carbon_sac = env.register_stellar_asset_contract_v2(carbon_issuer.clone());
     let carbonsink_sac = env.register_stellar_asset_contract_v2(carbonsink_issuer.clone());
+    // WARNING: carbon_sac.issuer().address() is a G-address (some conversion by testutils)
     carbonsink_sac.issuer().set_flag(IssuerFlags::RevocableFlag);
     carbonsink_sac.issuer().set_flag(IssuerFlags::RequiredFlag);
 
@@ -63,6 +65,6 @@ pub fn set_up_contracts_and_funder<'a>(funder_balance: i128) -> Setup<'a> {
     let sink_client = SinkContractClient::new(&env, &contract_id);
 
     Setup {
-        env, funder, carbon_sac, carbonsink_sac, contract_id, sink_client,
+        env, funder, carbon_sac, carbonsink_issuer, carbonsink_sac, contract_id, sink_client,
     }
 }

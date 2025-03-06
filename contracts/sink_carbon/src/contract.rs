@@ -65,4 +65,8 @@ impl SinkContract {
         admin.require_auth();
         env.storage().instance().set(&DataKey::SinkMinimum, &amount);
     }
+
+    pub fn debug_admin(env: Env) -> Address {
+        env.storage().instance().get(&DataKey::Admin).unwrap()
+    }
 }
