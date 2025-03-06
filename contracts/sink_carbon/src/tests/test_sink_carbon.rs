@@ -1,12 +1,12 @@
 #![cfg(test)]
 
-use super::*;
 use soroban_sdk::{
-    testutils::{Address as _, MockAuth, MockAuthInvoke}, 
-    Address, IntoVal, String, Symbol,
+    testutils::{Address as _, MockAuth, MockAuthInvoke}, token::TokenClient, Address, IntoVal, String, Symbol
 };
 
-use crate::fixtures::set_up_contracts_and_funder;
+use crate::contract::SinkContractClient;
+use crate::tests::fixtures::set_up_contracts_and_funder; 
+use crate::utils::quantize_to_kg;
 
 #[test]
 fn test_quantize_to_kg() {

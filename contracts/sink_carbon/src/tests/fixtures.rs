@@ -1,10 +1,12 @@
 #![cfg(test)]
 
-use super::*;
 use soroban_sdk::{
-    testutils::{Address as _, IssuerFlags, MockAuth, MockAuthInvoke, StellarAssetContract}, 
+    testutils::{Address as _, IssuerFlags, MockAuth, MockAuthInvoke, StellarAssetContract},
+    token::StellarAssetClient,
     Address, Env, IntoVal,
 };
+
+use crate::contract::SinkContract;
 
 pub struct Setup {
     pub env: Env,
