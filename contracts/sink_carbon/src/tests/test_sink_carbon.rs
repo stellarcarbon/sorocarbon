@@ -1,11 +1,11 @@
 #![cfg(test)]
 
 use soroban_sdk::{
-    testutils::{Address as _, MockAuth, MockAuthInvoke}, token::TokenClient, Address, IntoVal, String, Symbol
+    testutils::Address as _, token::TokenClient, Address,
 };
 
-use crate::contract::SinkContractClient;
-use crate::tests::fixtures::set_up_contracts_and_funder; 
+use crate::tests::fixtures::set_up_contracts_and_funder;
+use crate::tests::utils::{SinkTestData, sink_carbon_with_auth};
 use crate::utils::quantize_to_kg;
 
 #[test]
@@ -22,207 +22,92 @@ fn test_quantize_to_kg() {
 #[test]
 fn test_sink_carbon_happy() {
     let setup = set_up_contracts_and_funder(10_000_000);
-    let env = setup.env;
-    let funder = setup.funder;
-    let carbon_sac = setup.carbon_sac;
-    let carbonsink_sac = setup.carbonsink_sac;
-    let contract_id = setup.contract_id;
 
     // have the funder sink 0.1 CARBON
-    let client = SinkContractClient::new(&env, &contract_id);
-    let amount = 1_000_000_i64;
-    let project_id = Symbol::new(&env,"VCS1360");
-    let memo_text = String::from_str(&env,"100 kg 🌳🌴");
-    let email = String::from_str(&env, "");
-    client
-        .mock_auths(&[MockAuth {
-            address: &funder,
-            invoke: &MockAuthInvoke {
-                contract: &contract_id,
-                fn_name: "sink_carbon",
-                args: (
-                    funder.clone(), funder.clone(), amount, 
-                    project_id.clone(), memo_text.clone(), email.clone()
-                ).into_val(&env),
-                sub_invokes: &[MockAuthInvoke {
-                    contract: &carbon_sac.address(),
-                    fn_name: "burn",
-                    args: (&funder, &1_000_000_i128).into_val(&env),
-                    sub_invokes: &[],
-                }],
-            },
-        }])
-        .sink_carbon(
-            &funder, &funder, &amount, &project_id, &memo_text, &email
-        );
+    let test_data = SinkTestData { 
+        recipient: &setup.funder,
+        amount: 1_000_000_i64,
+        project_id: "VCS1360",
+        memo_text: "100 kg 🌳🌴",
+        email: ""
+    };
+    assert!(sink_carbon_with_auth(&setup, &test_data).is_ok());
 
     // assert the effect on balances
-    let carbon_client = TokenClient::new(&env, &carbon_sac.address());
-    let carbonsink_client = TokenClient::new(&env, &carbonsink_sac.address());
-    assert_eq!(carbon_client.balance(&funder), 9_000_000);
-    assert_eq!(carbonsink_client.balance(&funder), 1_000_000);
+    let carbon_client = TokenClient::new(&setup.env, &setup.carbon_sac.address());
+    let carbonsink_client = TokenClient::new(&setup.env, &setup.carbonsink_sac.address());
+    assert_eq!(carbon_client.balance(&setup.funder), 9_000_000);
+    assert_eq!(carbonsink_client.balance(&setup.funder), 1_000_000);
 }
 
 #[test]
 fn test_sink_carbon_twice() {
     let setup = set_up_contracts_and_funder(10_000_000);
-    let env = setup.env;
-    let funder = setup.funder;
-    let carbon_sac = setup.carbon_sac;
-    let carbonsink_sac = setup.carbonsink_sac;
-    let contract_id = setup.contract_id;
 
     // have the funder sink 0.3 CARBON
-    let client = SinkContractClient::new(&env, &contract_id);
-    let amount_a = 3_000_000_i64;
-    let project_id = Symbol::new(&env,"VCS1360");
-    let memo_a = String::from_str(&env,"300 kg 🌳🌴");
-    let email = String::from_str(&env, "");
-    client
-        .mock_auths(&[MockAuth {
-            address: &funder,
-            invoke: &MockAuthInvoke {
-                contract: &contract_id,
-                fn_name: "sink_carbon",
-                args: (
-                    funder.clone(), funder.clone(), amount_a, 
-                    project_id.clone(), memo_a.clone(), email.clone()
-                ).into_val(&env),
-                sub_invokes: &[MockAuthInvoke {
-                    contract: &carbon_sac.address(),
-                    fn_name: "burn",
-                    args: (&funder, &3_000_000_i128).into_val(&env),
-                    sub_invokes: &[],
-                }],
-            },
-        }])
-        .sink_carbon(
-            &funder, &funder, &amount_a, &project_id, &memo_a, &email
-        );
+    let test_data_a = SinkTestData { 
+        recipient: &setup.funder,
+        amount: 3_000_000_i64,
+        project_id: "VCS1360",
+        memo_text: "300 kg 🌳🌴",
+        email: ""
+    };
+    assert!(sink_carbon_with_auth(&setup, &test_data_a).is_ok());
 
     // have the funder sink 0.1 CARBON
-    let amount_b = 1_000_000_i64;
-    let memo_b = String::from_str(&env,"100 kg 🌳🌴");
-    client
-        .mock_auths(&[MockAuth {
-            address: &funder,
-            invoke: &MockAuthInvoke {
-                contract: &contract_id,
-                fn_name: "sink_carbon",
-                args: (
-                    funder.clone(), funder.clone(), amount_b, 
-                    project_id.clone(), memo_b.clone(), email.clone()
-                ).into_val(&env),
-                sub_invokes: &[MockAuthInvoke {
-                    contract: &carbon_sac.address(),
-                    fn_name: "burn",
-                    args: (&funder, &1_000_000_i128).into_val(&env),
-                    sub_invokes: &[],
-                }],
-            },
-        }])
-        .sink_carbon(
-            &funder, &funder, &amount_b, &project_id, &memo_b, &email
-        );
+    let mut test_data_b = test_data_a.clone();
+    test_data_b.amount = 1_000_000_i64;
+    test_data_b.memo_text = "100 kg 🌳🌴";
+    assert!(sink_carbon_with_auth(&setup, &test_data_b).is_ok());
 
     // assert the effect on balances
-    let carbon_client = TokenClient::new(&env, &carbon_sac.address());
-    let carbonsink_client = TokenClient::new(&env, &carbonsink_sac.address());
-    assert_eq!(carbon_client.balance(&funder), 6_000_000);
-    assert_eq!(carbonsink_client.balance(&funder), 4_000_000);
+    let carbon_client = TokenClient::new(&setup.env, &setup.carbon_sac.address());
+    let carbonsink_client = TokenClient::new(&setup.env, &setup.carbonsink_sac.address());
+    assert_eq!(carbon_client.balance(&setup.funder), 6_000_000);
+    assert_eq!(carbonsink_client.balance(&setup.funder), 4_000_000);
 }
 
 #[test]
 fn test_sink_carbon_separate_recipient() {
     let setup = set_up_contracts_and_funder(10_000_000);
-    let env = setup.env;
-    let funder = setup.funder;
-    let recipient = Address::generate(&env);
-    let carbon_sac = setup.carbon_sac;
-    let carbonsink_sac = setup.carbonsink_sac;
-    let contract_id = setup.contract_id;
 
     // have the funder sink 0.333 CARBON for the recipient
-    let client = SinkContractClient::new(&env, &contract_id);
-    let amount = 3_330_000_i64;
-    let project_id = Symbol::new(&env,"OFP1234567890");
-    let memo_text = String::from_str(&env,"333 kg 🍄‍🟫🍄🍄‍🟫");
-    let email = String::from_str(&env, "");
-    client
-        .mock_auths(&[MockAuth {
-            address: &funder,
-            invoke: &MockAuthInvoke {
-                contract: &contract_id,
-                fn_name: "sink_carbon",
-                args: (
-                    funder.clone(), recipient.clone(), amount, 
-                    project_id.clone(), memo_text.clone(), email.clone()
-                ).into_val(&env),
-                sub_invokes: &[MockAuthInvoke {
-                    contract: &carbon_sac.address(),
-                    fn_name: "burn",
-                    args: (&funder, &3_330_000_i128).into_val(&env),
-                    sub_invokes: &[],
-                }],
-            },
-        }])
-        .sink_carbon(
-            &funder, &recipient, &amount, &project_id, &memo_text, &email
-        );
+    let test_data = SinkTestData { 
+        recipient: &Address::generate(&setup.env),
+        amount: 3_330_000_i64,
+        project_id: "OFP1234567890",
+        memo_text: "333 kg 🍄‍🟫🍄🍄‍🟫",
+        email: ""
+    };
+    assert!(sink_carbon_with_auth(&setup, &test_data).is_ok());
 
     // assert the effect on balances
-    let carbon_client = TokenClient::new(&env, &carbon_sac.address());
-    let carbonsink_client = TokenClient::new(&env, &carbonsink_sac.address());
-    assert_eq!(carbon_client.balance(&funder), 6_670_000);
-    assert_eq!(carbon_client.balance(&recipient), 0);
-    assert_eq!(carbonsink_client.balance(&funder), 0);
-    assert_eq!(carbonsink_client.balance(&recipient), 3_330_000);
+    let carbon_client = TokenClient::new(&setup.env, &setup.carbon_sac.address());
+    let carbonsink_client = TokenClient::new(&setup.env, &setup.carbonsink_sac.address());
+    assert_eq!(carbon_client.balance(&setup.funder), 6_670_000);
+    assert_eq!(carbon_client.balance(test_data.recipient), 0);
+    assert_eq!(carbonsink_client.balance(&setup.funder), 0);
+    assert_eq!(carbonsink_client.balance(test_data.recipient), 3_330_000);
 }
 
 #[test]
 fn test_sink_amount_too_low() {
     let setup = set_up_contracts_and_funder(10_000_000);
-    let env = setup.env;
-    let funder = setup.funder;
-    let carbon_sac = setup.carbon_sac;
-    let carbonsink_sac = setup.carbonsink_sac;
-    let contract_id = setup.contract_id;
 
     // attempt to sink 0.099 CARBON
-    let client = SinkContractClient::new(&env, &contract_id);
-    let amount = 990_000_i64;
-    let project_id = Symbol::new(&env,"SOMEPROJECT");
-    let memo_text = String::from_str(&env,"99 kg 🌳🌴");
-    let email = String::from_str(&env, "");
-
+    let test_data = SinkTestData { 
+        recipient: &setup.funder,
+        amount: 990_000_i64,
+        project_id: "SOMEPROJECT",
+        memo_text: "99 kg 🌳🌴",
+        email: ""
+    };
     // it should fail because the amount is lower than the minimum
-    assert!(
-        client
-        .mock_auths(&[MockAuth {
-            address: &funder,
-            invoke: &MockAuthInvoke {
-                contract: &contract_id,
-                fn_name: "sink_carbon",
-                args: (
-                    funder.clone(), funder.clone(), amount, 
-                    project_id.clone(), memo_text.clone(), email.clone()
-                ).into_val(&env),
-                sub_invokes: &[MockAuthInvoke {
-                    contract: &carbon_sac.address(),
-                    fn_name: "burn",
-                    args: (&funder, &1_000_000_i128).into_val(&env),
-                    sub_invokes: &[],
-                }],
-            },
-        }])
-        .try_sink_carbon(
-            &funder, &funder, &amount, &project_id, &memo_text, &email
-        ).is_err()
-    );
+    assert!(sink_carbon_with_auth(&setup, &test_data).is_err());
 
     // assert the lack of effect on balances
-    let carbon_client = TokenClient::new(&env, &carbon_sac.address());
-    let carbonsink_client = TokenClient::new(&env, &carbonsink_sac.address());
-    assert_eq!(carbon_client.balance(&funder), 10_000_000);
-    assert_eq!(carbonsink_client.balance(&funder), 0);
+    let carbon_client = TokenClient::new(&setup.env, &setup.carbon_sac.address());
+    let carbonsink_client = TokenClient::new(&setup.env, &setup.carbonsink_sac.address());
+    assert_eq!(carbon_client.balance(&setup.funder), 10_000_000);
+    assert_eq!(carbonsink_client.balance(&setup.funder), 0);
 }
