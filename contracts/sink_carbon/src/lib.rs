@@ -7,6 +7,7 @@ use soroban_sdk::{
 };
 
 use crate::storage_types::{DataKey, extend_instance_ttl};
+use crate::utils::quantize_to_kg;
 
 #[contract]
 pub struct SinkContract;
@@ -18,6 +19,7 @@ impl SinkContract {
         env.storage().instance().set(&DataKey::CarbonID, &carbon_id);
         env.storage().instance().set(&DataKey::CarbonSinkID, &carbonsink_id);
         env.storage().instance().set(&DataKey::IsActive, &true);
+        env.storage().instance().set(&DataKey::SinkMinimum, &1_000_000_i64);  // 100 kg
     }
 
     pub fn sink_carbon(
@@ -30,6 +32,15 @@ impl SinkContract {
         _email: String,
     ) {
         extend_instance_ttl(&env);
+
+        // quantize `amount` to kg resolution
+        let amount = quantize_to_kg(amount);
+
+        // check if `amount` equals or exceeds minimum
+        let minimum_sink_amount: i64 = env.storage().instance().get(&DataKey::SinkMinimum).unwrap();
+        if amount < minimum_sink_amount {
+            panic!("sink amount is smaller than minimum");
+        }
 
         // `funder` burns `amount` of CARBON
         funder.require_auth();
@@ -47,5 +58,6 @@ impl SinkContract {
 }
 
 mod storage_types;
+mod utils;
 mod test;
 mod fixtures;

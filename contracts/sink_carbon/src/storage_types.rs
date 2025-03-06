@@ -11,6 +11,7 @@ pub enum DataKey {
     CarbonID,
     CarbonSinkID,
     IsActive,
+    SinkMinimum,
 }
 
 pub fn extend_instance_ttl(env: &Env) {

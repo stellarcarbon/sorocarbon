@@ -545,6 +545,18 @@
                         "val": {
                           "bool": true
                         }
+                      },
+                      {
+                        "key": {
+                          "vec": [
+                            {
+                              "symbol": "SinkMinimum"
+                            }
+                          ]
+                        },
+                        "val": {
+                          "i64": 1000000
+                        }
                       }
                     ]
                   }
