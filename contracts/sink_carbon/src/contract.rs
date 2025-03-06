@@ -53,4 +53,16 @@ impl SinkContract {
         carbonsink_client.mint(&recipient, &amount.into());
         carbonsink_client.set_authorized(&recipient, &false);
     }
+
+    pub fn get_minimum_sink_amount(env: Env) -> i64 {
+        env.storage().instance().get(&DataKey::SinkMinimum).unwrap()
+    }
+
+    // ADMIN FUNCTIONS
+
+    pub fn set_minimum_sink_amount(env: Env, amount: i64) {
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        admin.require_auth();
+        env.storage().instance().set(&DataKey::SinkMinimum, &amount);
+    }
 }
