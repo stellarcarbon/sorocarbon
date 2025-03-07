@@ -76,7 +76,15 @@ impl SinkContract {
     pub fn reset_admin(env: Env) -> Address {
         let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
-        // TODO: set_admin on the CarbonSINK SAC and deactivate contract
+
+        // set contract admin as the CarbonSINK SAC admin
+        let carbonsink_id = env.storage().instance().get(&DataKey::CarbonSinkID).unwrap();
+        let carbonsink_client = StellarAssetClient::new(&env, &carbonsink_id);
+        carbonsink_client.set_admin(&admin);
+
+        // deactivate this contract
+        Self::deactivate(env);
+
         admin
     }
 
