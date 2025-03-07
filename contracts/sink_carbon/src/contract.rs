@@ -30,6 +30,9 @@ impl SinkContract {
         _email: String,
     ) {
         extend_instance_ttl(&env);
+        if !Self::is_active(env.clone()) {
+            panic!("SinkContract has been deactivated");
+        }
 
         // quantize `amount` to kg resolution
         let amount = quantize_to_kg(amount);
