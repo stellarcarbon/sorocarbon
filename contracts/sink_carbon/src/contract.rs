@@ -66,7 +66,18 @@ impl SinkContract {
         env.storage().instance().set(&DataKey::SinkMinimum, &amount);
     }
 
-    pub fn debug_admin(env: Env) -> Address {
-        env.storage().instance().get(&DataKey::Admin).unwrap()
+    pub fn reset_admin(env: Env) -> Address {
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        admin.require_auth();
+        // TODO: set_admin on the CarbonSINK SAC and deactivate contract
+        admin
+    }
+
+    pub fn activate(env: Env) {
+        env.storage().instance().set(&DataKey::IsActive, &true);
+    }
+
+    pub fn deactivate(env: Env) {
+        env.storage().instance().set(&DataKey::IsActive, &false);
     }
 }
