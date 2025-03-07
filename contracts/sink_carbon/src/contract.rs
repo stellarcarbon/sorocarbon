@@ -58,6 +58,10 @@ impl SinkContract {
         env.storage().instance().get(&DataKey::SinkMinimum).unwrap()
     }
 
+    pub fn is_active(env: Env) -> bool {
+        env.storage().instance().get(&DataKey::IsActive).unwrap()
+    }
+
     // ADMIN FUNCTIONS
 
     pub fn set_minimum_sink_amount(env: Env, amount: i64) {
