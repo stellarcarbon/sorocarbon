@@ -58,22 +58,26 @@ impl SinkContract {
     }
 
     pub fn get_minimum_sink_amount(env: Env) -> i64 {
+        extend_instance_ttl(&env);
         env.storage().instance().get(&DataKey::SinkMinimum).unwrap()
     }
 
     pub fn is_active(env: Env) -> bool {
+        extend_instance_ttl(&env);
         env.storage().instance().get(&DataKey::IsActive).unwrap()
     }
 
     // ADMIN FUNCTIONS
 
     pub fn set_minimum_sink_amount(env: Env, amount: i64) {
+        extend_instance_ttl(&env);
         let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
         env.storage().instance().set(&DataKey::SinkMinimum, &amount);
     }
 
     pub fn reset_admin(env: Env) -> Address {
+        extend_instance_ttl(&env);
         let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
 
@@ -89,12 +93,14 @@ impl SinkContract {
     }
 
     pub fn activate(env: Env) {
+        extend_instance_ttl(&env);
         let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
         env.storage().instance().set(&DataKey::IsActive, &true);
     }
 
     pub fn deactivate(env: Env) {
+        extend_instance_ttl(&env);
         let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
         env.storage().instance().set(&DataKey::IsActive, &false);
