@@ -31,7 +31,7 @@ fn test_set_sink_minimum_as_admin() {
         }])
         .set_minimum_sink_amount(&515_000);
 
-
+    // the minimum should be set succesfully
     let minimum = client.get_minimum_sink_amount();
     assert_eq!(minimum, 515_000)
 }
@@ -41,6 +41,7 @@ fn test_set_sink_minimum_unauthorized() {
     let setup = set_up_contracts_and_funder(0);
     let client = setup.sink_client;
 
+    // set minimum as a random address should fail
     assert!(
         client
         .mock_auths(&[MockAuth {
@@ -54,4 +55,56 @@ fn test_set_sink_minimum_unauthorized() {
         }])
         .try_set_minimum_sink_amount(&0).is_err()
     );
+}
+
+#[test]
+fn test_activate_deactivate() {
+    let setup = set_up_contracts_and_funder(0);
+    let client = setup.sink_client;
+    let admin = setup.carbonsink_issuer;
+
+    // the default should be an active contract
+    let initial_is_active = client.is_active();
+    assert_eq!(initial_is_active, true);
+
+    // disable the contract and check the state
+    client
+        .mock_auths(&[MockAuth {
+            address: &admin,
+            invoke: &MockAuthInvoke {
+                contract: &client.address,
+                fn_name: "deactivate",
+                args: ().into_val(&setup.env),
+                sub_invokes: &[],
+            },
+        }])
+        .deactivate();
+
+    let after_deactivate = client.is_active();
+    assert_eq!(after_deactivate, false);
+
+    // enable the contract and check the state
+    client
+        .mock_auths(&[MockAuth {
+            address: &admin,
+            invoke: &MockAuthInvoke {
+                contract: &client.address,
+                fn_name: "activate",
+                args: ().into_val(&setup.env),
+                sub_invokes: &[],
+            },
+        }])
+        .activate();
+
+    let after_reactivate = client.is_active();
+    assert_eq!(after_reactivate, true);
+}
+
+#[test]
+fn test_deactivate_unauthorized() {
+    let setup = set_up_contracts_and_funder(0);
+    let client = setup.sink_client;
+
+    // it should fail because the call lacks admin auth
+    assert!(client.try_deactivate().is_err());
 }
