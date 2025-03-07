@@ -79,7 +79,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 0
+                    "lo": 10000000
                   }
                 }
               ]
@@ -89,7 +89,6 @@
         }
       ]
     ],
-    [],
     [
       [
         "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
@@ -97,18 +96,15 @@
           "function": {
             "contract_fn": {
               "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4",
-              "function_name": "set_minimum_sink_amount",
-              "args": [
-                {
-                  "i64": 515000
-                }
-              ]
+              "function_name": "deactivate",
+              "args": []
             }
           },
           "sub_invocations": []
         }
       ]
     ],
+    [],
     []
   ],
   "ledger": {
@@ -241,6 +237,38 @@
             "ext": "v0"
           },
           6311999
+        ]
+      ],
+      [
+        {
+          "contract_data": {
+            "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+            "key": "ledger_key_contract_instance",
+            "durability": "persistent"
+          }
+        },
+        [
+          {
+            "last_modified_ledger_seq": 0,
+            "data": {
+              "contract_data": {
+                "ext": "v0",
+                "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+                "key": "ledger_key_contract_instance",
+                "durability": "persistent",
+                "val": {
+                  "contract_instance": {
+                    "executable": {
+                      "wasm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    },
+                    "storage": null
+                  }
+                }
+              }
+            },
+            "ext": "v0"
+          },
+          4095
         ]
       ],
       [
@@ -379,7 +407,7 @@
             "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
             "key": {
               "ledger_key_nonce": {
-                "nonce": 3
+                "nonce": 1033654523790656264
               }
             },
             "durability": "temporary"
@@ -394,7 +422,7 @@
                 "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
                 "key": {
                   "ledger_key_nonce": {
-                    "nonce": 3
+                    "nonce": 1033654523790656264
                   }
                 },
                 "durability": "temporary",
@@ -474,7 +502,7 @@
                           ]
                         },
                         "val": {
-                          "bool": true
+                          "bool": false
                         }
                       },
                       {
@@ -486,7 +514,7 @@
                           ]
                         },
                         "val": {
-                          "i64": 515000
+                          "i64": 1000000
                         }
                       }
                     ]
@@ -543,7 +571,7 @@
                       "val": {
                         "i128": {
                           "hi": 0,
-                          "lo": 0
+                          "lo": 10000000
                         }
                       }
                     },

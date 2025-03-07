@@ -111,3 +111,20 @@ fn test_sink_amount_too_low() {
     assert_eq!(carbon_client.balance(&setup.funder), 10_000_000);
     assert_eq!(carbonsink_client.balance(&setup.funder), 0);
 }
+
+#[test]
+fn test_sink_contract_inactive() {
+    let setup = set_up_contracts_and_funder(10_000_000);
+    setup.sink_client.mock_all_auths().deactivate();
+
+    // attempt to sink 1 CARBON
+    let test_data = SinkTestData { 
+        recipient: &setup.funder,
+        amount: 10_000_000_i64,
+        project_id: "SOMEPROJECT",
+        memo_text: "A TON",
+        email: ""
+    };
+    // it should fail because the contract is not active
+    assert!(sink_carbon_with_auth(&setup, &test_data).is_err());
+}
