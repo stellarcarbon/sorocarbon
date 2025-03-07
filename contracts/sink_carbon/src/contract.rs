@@ -74,10 +74,14 @@ impl SinkContract {
     }
 
     pub fn activate(env: Env) {
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        admin.require_auth();
         env.storage().instance().set(&DataKey::IsActive, &true);
     }
 
     pub fn deactivate(env: Env) {
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        admin.require_auth();
         env.storage().instance().set(&DataKey::IsActive, &false);
     }
 }
