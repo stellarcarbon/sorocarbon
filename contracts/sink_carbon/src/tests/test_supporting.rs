@@ -1,5 +1,6 @@
 #![cfg(test)]
 
+use soroban_sdk::token::StellarAssetClient;
 use soroban_sdk::{Address, IntoVal};
 use soroban_sdk::testutils::{Address as _, MockAuth, MockAuthInvoke};
 
@@ -107,4 +108,35 @@ fn test_deactivate_unauthorized() {
 
     // it should fail because the call lacks admin auth
     assert!(client.try_deactivate().is_err());
+}
+
+#[test]
+fn test_reset_admin() {
+    let setup = set_up_contracts_and_funder(0);
+    let client = setup.sink_client;
+    let admin = setup.carbonsink_issuer;
+    let carbonsink_sac = setup.carbonsink_sac;
+    let carbonsink_client = StellarAssetClient::new(&setup.env, &carbonsink_sac.address());
+
+    // initial state: CarbonSINK SAC admin is this contract
+    let sac_admin = carbonsink_client.admin();
+    assert_ne!(sac_admin, admin);
+    assert_eq!(sac_admin, setup.contract_id);
+
+    // reset SAC admin to CarbonSINK issuer
+    let carbonsink_issuer = client
+        .mock_auths(&[MockAuth {
+            address: &admin,
+            invoke: &MockAuthInvoke {
+                contract: &client.address,
+                fn_name: "reset_admin",
+                args: ().into_val(&setup.env),
+                sub_invokes: &[],
+            },
+        }])
+        .reset_admin(); // this panics on Self::deactivate(env);
+
+    assert_eq!(carbonsink_issuer, admin);
+    let new_sac_admin = carbonsink_client.admin();
+    assert_eq!(new_sac_admin, admin);
 }
