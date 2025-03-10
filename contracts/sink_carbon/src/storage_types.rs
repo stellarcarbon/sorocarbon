@@ -17,3 +17,7 @@ pub enum DataKey {
 pub fn extend_instance_ttl(env: &Env) {
     env.storage().instance().extend_ttl(INSTANCE_TTL_THRESHOLD, INSTANCE_EXTEND_AMOUNT);
 }
+
+pub fn set_is_active(env: &Env, val: bool) {
+    env.storage().instance().set(&DataKey::IsActive, &val);
+}

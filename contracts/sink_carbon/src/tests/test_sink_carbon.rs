@@ -8,6 +8,8 @@ use crate::tests::fixtures::set_up_contracts_and_funder;
 use crate::tests::utils::{SinkTestData, sink_carbon_with_auth};
 use crate::utils::quantize_to_kg;
 
+// TODO: consider refactoring with `should_panic` macro
+
 #[test]
 fn test_quantize_to_kg() {
     let tons_with_remainder = 50_000_123_i64;

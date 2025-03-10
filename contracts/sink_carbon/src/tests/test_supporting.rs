@@ -134,7 +134,7 @@ fn test_reset_admin() {
                 sub_invokes: &[],
             },
         }])
-        .reset_admin(); // this panics on Self::deactivate(env);
+        .reset_admin();
 
     assert_eq!(carbonsink_issuer, admin);
     let new_sac_admin = carbonsink_client.admin();

@@ -4,7 +4,7 @@ use soroban_sdk::{
     Address, Env, String, Symbol,
 };
 
-use crate::storage_types::{DataKey, extend_instance_ttl};
+use crate::storage_types::{DataKey, extend_instance_ttl, set_is_active};
 use crate::utils::quantize_to_kg;
 
 #[contract]
@@ -87,7 +87,7 @@ impl SinkContract {
         carbonsink_client.set_admin(&admin);
 
         // deactivate this contract
-        Self::deactivate(env);
+        set_is_active(&env, false);
 
         admin
     }
@@ -96,13 +96,13 @@ impl SinkContract {
         extend_instance_ttl(&env);
         let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
-        env.storage().instance().set(&DataKey::IsActive, &true);
+        set_is_active(&env, true);
     }
 
     pub fn deactivate(env: Env) {
         extend_instance_ttl(&env);
         let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
-        env.storage().instance().set(&DataKey::IsActive, &false);
+        set_is_active(&env, false);
     }
 }
