@@ -38,13 +38,13 @@ fn test_set_sink_minimum_as_admin() {
 }
 
 #[test]
+#[should_panic = "HostError: Error(Auth, InvalidAction)"]
 fn test_set_sink_minimum_unauthorized() {
     let setup = set_up_contracts_and_funder(0);
     let client = setup.sink_client;
 
     // set minimum as a random address should fail
-    assert!(
-        client
+    client
         .mock_auths(&[MockAuth {
             address: &Address::generate(&setup.env),
             invoke: &MockAuthInvoke {
@@ -54,8 +54,7 @@ fn test_set_sink_minimum_unauthorized() {
                 sub_invokes: &[],
             },
         }])
-        .try_set_minimum_sink_amount(&0).is_err()
-    );
+        .set_minimum_sink_amount(&0);
 }
 
 #[test]
@@ -102,12 +101,13 @@ fn test_activate_deactivate() {
 }
 
 #[test]
+#[should_panic = "HostError: Error(Auth, InvalidAction)"]
 fn test_deactivate_unauthorized() {
     let setup = set_up_contracts_and_funder(0);
     let client = setup.sink_client;
 
     // it should fail because the call lacks admin auth
-    assert!(client.try_deactivate().is_err());
+    client.deactivate();
 }
 
 #[test]
