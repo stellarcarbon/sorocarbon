@@ -1,10 +1,11 @@
 use soroban_sdk::{
-    contract, contractimpl, 
-    token::{TokenClient, StellarAssetClient}, 
-    Address, Env, String, Symbol,
+    contract, contractimpl, panic_with_error,
+    token::{StellarAssetClient, TokenClient}, 
+    Address, Env, String, Symbol
 };
 
-use crate::storage_types::{DataKey, extend_instance_ttl, set_is_active};
+use crate::storage_types::{extend_instance_ttl, set_is_active, DataKey};
+use crate::errors::SinkError;
 use crate::utils::quantize_to_kg;
 
 #[contract]
@@ -28,10 +29,10 @@ impl SinkContract {
         _project_id: Symbol,
         _memo_text: String,
         _email: String,
-    ) {
+    ) -> Result<(), SinkError> {
         extend_instance_ttl(&env);
         if !Self::is_active(env.clone()) {
-            panic!("SinkContract has been deactivated");
+            panic_with_error!(&env, SinkError::ContractDeactivated);
         }
 
         // quantize `amount` to kg resolution
@@ -40,7 +41,7 @@ impl SinkContract {
         // check if `amount` equals or exceeds minimum
         let minimum_sink_amount: i64 = env.storage().instance().get(&DataKey::SinkMinimum).unwrap();
         if amount < minimum_sink_amount {
-            panic!("sink amount is smaller than minimum");
+            return Err(SinkError::AmountTooLow);
         }
 
         // `funder` burns `amount` of CARBON
@@ -55,6 +56,8 @@ impl SinkContract {
         carbonsink_client.set_authorized(&recipient, &true);
         carbonsink_client.mint(&recipient, &amount.into());
         carbonsink_client.set_authorized(&recipient, &false);
+
+        Ok(())
     }
 
     pub fn get_minimum_sink_amount(env: Env) -> i64 {

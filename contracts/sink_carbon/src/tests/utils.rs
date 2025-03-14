@@ -2,10 +2,10 @@
 
 use soroban_sdk::{
     testutils::{MockAuth, MockAuthInvoke},
-    Address, Env, IntoVal, InvokeError, String, Symbol, TryFromVal, Val, vec
+    Address, IntoVal, String, Symbol, vec
 };
 
-use crate::tests::fixtures::Setup;
+use crate::{errors::SinkError, tests::fixtures::Setup};
 
 #[derive(Clone)]
 pub struct SinkTestData<'a> { 
@@ -16,10 +16,7 @@ pub struct SinkTestData<'a> {
     pub email: &'static str,
 }
 
-pub fn sink_carbon_with_auth(setup: &Setup, test_data: &SinkTestData) -> Result<
-    Result<(), <() as TryFromVal<Env, Val>>::Error>, 
-    Result<soroban_sdk::Error, InvokeError>
-> {
+pub fn sink_carbon_with_auth(setup: &Setup, test_data: &SinkTestData) -> Result<(), SinkError> {
     let env = &setup.env;
     let funder = &setup.funder;
     let carbon_sac = &setup.carbon_sac;
@@ -32,7 +29,7 @@ pub fn sink_carbon_with_auth(setup: &Setup, test_data: &SinkTestData) -> Result<
     let project_id = Symbol::new(env, test_data.project_id);
     let memo_text = String::from_str(env,test_data.memo_text);
     let email = String::from_str(env, test_data.email);
-    client
+    match client
         .mock_auths(&[MockAuth {
             address: funder,
             invoke: &MockAuthInvoke {
@@ -52,5 +49,10 @@ pub fn sink_carbon_with_auth(setup: &Setup, test_data: &SinkTestData) -> Result<
         }])
         .try_sink_carbon(
             &funder, &recipient, &amount, &project_id, &memo_text, &email
-        )
+        ) {
+        Ok(Ok(())) => Ok(()),
+        Err(Ok(sink_err)) => Err(sink_err),
+        Ok(Err(conversion_err)) => panic!("ConversionError: {:?}", conversion_err),
+        Err(Err(invoke_err)) => panic!("InvokeError: {:?}", invoke_err),
+    }
 }
