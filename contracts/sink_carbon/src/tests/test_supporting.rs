@@ -58,6 +58,27 @@ fn test_set_sink_minimum_unauthorized() {
 }
 
 #[test]
+#[should_panic = "HostError: Error(Contract, #3)"]
+fn test_set_negative_sink_minimum() {
+    let setup = set_up_contracts_and_funder(0);
+    let client = setup.sink_client;
+    let admin = setup.carbonsink_issuer;
+
+    // amount must be a positive number
+    client
+        .mock_auths(&[MockAuth {
+            address: &admin,
+            invoke: &MockAuthInvoke {
+                contract: &client.address,
+                fn_name: "set_minimum_sink_amount",
+                args: (-1_i64,).into_val(&setup.env),
+                sub_invokes: &[],
+            },
+        }])
+        .set_minimum_sink_amount(&-1);
+}
+
+#[test]
 fn test_activate_deactivate() {
     let setup = set_up_contracts_and_funder(0);
     let client = setup.sink_client;
