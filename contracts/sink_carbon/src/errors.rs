@@ -9,6 +9,8 @@ pub enum SinkError {
     NegativeAmount = 3,
     InsufficientBalance = 4,
     AccountMissing = 5,
+    TrustlineMissing = 6,
+    TrustlineLimitReached = 7,
 }
 
 #[contracterror]

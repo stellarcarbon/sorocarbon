@@ -69,7 +69,23 @@ impl SinkContract {
         let carbonsink_id = env.storage().instance().get(&DataKey::CarbonSinkID).unwrap();
         let carbonsink_client = StellarAssetClient::new(&env, &carbonsink_id);
         carbonsink_client.set_authorized(&recipient, &true);
-        carbonsink_client.mint(&recipient, &amount.into());
+        match carbonsink_client.try_mint(&recipient, &amount.into()) {
+            Ok(_) => {}
+            Err(Ok(err)) => {
+                let error_code = err.get_code();
+                if error_code == SACError::BalanceError as u32 {
+                    return Err(SinkError::TrustlineLimitReached);
+                } else if error_code == SACError::AccountMissingError as u32 {
+                    return Err(SinkError::AccountMissing);
+                } else if error_code == SACError::TrustlineMissingError as u32 {
+                    return Err(SinkError::TrustlineMissing);
+                } // re-panic for unexpected errors
+                panic_with_error!(&env, err);
+            },
+            Err(Err(invoke_err)) => {
+                panic!("InvokeError: {:?}", invoke_err);
+            }
+        }
         carbonsink_client.set_authorized(&recipient, &false);
 
         Ok(())
