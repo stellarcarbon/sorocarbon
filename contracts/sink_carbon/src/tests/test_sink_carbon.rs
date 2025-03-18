@@ -1,8 +1,8 @@
 #![cfg(test)]
 
-use soroban_sdk::{
-    testutils::Address as _, token::TokenClient, Address,
-};
+use soroban_sdk::{Address, String, Symbol};
+use soroban_sdk::testutils::Address as _;
+use soroban_sdk::token::TokenClient;
 
 use crate::errors::SinkError;
 use crate::tests::fixtures::set_up_contracts_and_funder;
@@ -26,6 +26,7 @@ fn test_sink_carbon_happy() {
 
     // have the funder sink 0.1 CARBON
     let test_data = SinkTestData { 
+        funder: &setup.funder,
         recipient: &setup.funder,
         amount: 1_000_000_i64,
         project_id: "VCS1360",
@@ -47,6 +48,7 @@ fn test_sink_carbon_twice() {
 
     // have the funder sink 0.3 CARBON
     let test_data_a = SinkTestData { 
+        funder: &setup.funder,
         recipient: &setup.funder,
         amount: 3_000_000_i64,
         project_id: "VCS1360",
@@ -74,6 +76,7 @@ fn test_sink_carbon_separate_recipient() {
 
     // have the funder sink 0.333 CARBON for the recipient
     let test_data = SinkTestData { 
+        funder: &setup.funder,
         recipient: &Address::generate(&setup.env),
         amount: 3_330_000_i64,
         project_id: "OFP1234567890",
@@ -96,7 +99,8 @@ fn test_sink_amount_too_low() {
     let setup = set_up_contracts_and_funder(10_000_000);
 
     // attempt to sink 0.099 CARBON
-    let test_data = SinkTestData { 
+    let test_data = SinkTestData {
+        funder: &setup.funder, 
         recipient: &setup.funder,
         amount: 990_000_i64,
         project_id: "SOMEPROJECT",
@@ -123,6 +127,7 @@ fn test_sink_contract_inactive() {
 
     // attempt to sink 1 CARBON
     let test_data = SinkTestData { 
+        funder: &setup.funder,
         recipient: &setup.funder,
         amount: 10_000_000_i64,
         project_id: "SOMEPROJECT",
@@ -139,6 +144,7 @@ fn test_funder_balance_too_low() {
 
     // attempt to sink 0.1 CARBON
     let test_data = SinkTestData { 
+        funder: &setup.funder,
         recipient: &setup.funder,
         amount: 1_000_000_i64,
         project_id: "VCS1360",
@@ -149,4 +155,25 @@ fn test_funder_balance_too_low() {
     let sink_res = sink_carbon_with_auth(&setup, &test_data);
     assert!(sink_res.is_err());
     assert_eq!(sink_res.unwrap_err(), SinkError::InsufficientBalance);
+}
+
+#[test]
+fn test_funder_account_missing() {
+    let setup = set_up_contracts_and_funder(0);
+    let env = &setup.env;
+    let client = &setup.sink_client;
+
+    let funder = Address::from_str(&setup.env, "GA2H3SJYGIUG2DXXUZ7IN3LNO2AIMVWCDCL25PKQHKMC76OWW3HYQHY4");
+    let amount = 1_000_000_i64;
+    let project_id = Symbol::new(env, "VCS1360");
+    let memo_text = String::from_str(env, "100 kg 🌳🌴");
+    let email = String::from_str(env, "");
+
+    // attempt to sink with non-existing account
+    let sink_res = client
+        .mock_all_auths()
+        .try_sink_carbon(&funder, &funder, &amount, &project_id, &memo_text, &email);
+    // it should fail because the funder account wasn't created
+    assert!(sink_res.is_err());
+    assert_eq!(sink_res.unwrap_err().unwrap(), SinkError::AccountMissing);
 }

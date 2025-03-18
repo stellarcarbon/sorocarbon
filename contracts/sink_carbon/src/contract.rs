@@ -55,7 +55,9 @@ impl SinkContract {
                 if error_code == SACError::BalanceError as u32 {
                     // most likely the funder's CARBON balance is too low
                     return Err(SinkError::InsufficientBalance);
-                } else if error_code == SACError::AccountMissingError as u32 {
+                } else if error_code == SACError::TrustlineMissingError as u32 {
+                    // burn internals check the trustline first
+                    // TODO: test interactively with deployed contract
                     return Err(SinkError::AccountMissing);
                 } // re-panic for unexpected errors
                 panic_with_error!(&env, err);

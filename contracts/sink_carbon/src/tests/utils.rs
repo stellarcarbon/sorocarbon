@@ -8,7 +8,8 @@ use soroban_sdk::{
 use crate::{errors::SinkError, tests::fixtures::Setup};
 
 #[derive(Clone)]
-pub struct SinkTestData<'a> { 
+pub struct SinkTestData<'a> {
+    pub funder: &'a Address,
     pub recipient: &'a Address, 
     pub amount: i64, 
     pub project_id: &'static str,
@@ -18,16 +19,16 @@ pub struct SinkTestData<'a> {
 
 pub fn sink_carbon_with_auth(setup: &Setup, test_data: &SinkTestData) -> Result<(), SinkError> {
     let env = &setup.env;
-    let funder = &setup.funder;
     let carbon_sac = &setup.carbon_sac;
     let contract_id = &setup.contract_id;
 
     // have the funder sink `amount` of CARBON for the recipient
     let client = &setup.sink_client;
+    let funder = test_data.funder;
     let recipient = test_data.recipient;
     let amount = test_data.amount;
     let project_id = Symbol::new(env, test_data.project_id);
-    let memo_text = String::from_str(env,test_data.memo_text);
+    let memo_text = String::from_str(env, test_data.memo_text);
     let email = String::from_str(env, test_data.email);
     match client
         .mock_auths(&[MockAuth {
