@@ -9,8 +9,6 @@ use crate::tests::fixtures::set_up_contracts_and_funder;
 use crate::tests::utils::{SinkTestData, sink_carbon_with_auth};
 use crate::utils::quantize_to_kg;
 
-// TODO: consider refactoring with `should_panic` macro
-
 #[test]
 fn test_quantize_to_kg() {
     let tons_with_remainder = 50_000_123_i64;
@@ -106,7 +104,9 @@ fn test_sink_amount_too_low() {
         email: ""
     };
     // it should fail because the amount is lower than the minimum
-    assert!(sink_carbon_with_auth(&setup, &test_data).is_err());
+    let sink_res = sink_carbon_with_auth(&setup, &test_data);
+    assert!(sink_res.is_err());
+    assert_eq!(sink_res.unwrap_err(), SinkError::AmountTooLow);
 
     // assert the lack of effect on balances
     let carbon_client = TokenClient::new(&setup.env, &setup.carbon_sac.address());
@@ -116,6 +116,7 @@ fn test_sink_amount_too_low() {
 }
 
 #[test]
+#[should_panic = "ContractDeactivated"]
 fn test_sink_contract_inactive() {
     let setup = set_up_contracts_and_funder(10_000_000);
     setup.sink_client.mock_all_auths().deactivate();
@@ -129,7 +130,7 @@ fn test_sink_contract_inactive() {
         email: ""
     };
     // it should fail because the contract is not active
-    assert!(sink_carbon_with_auth(&setup, &test_data).is_err());
+    sink_carbon_with_auth(&setup, &test_data).unwrap();
 }
 
 #[test]
