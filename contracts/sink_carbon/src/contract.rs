@@ -72,11 +72,16 @@ impl SinkContract {
 
     // ADMIN FUNCTIONS
 
-    pub fn set_minimum_sink_amount(env: Env, amount: i64) {
+    pub fn set_minimum_sink_amount(env: Env, amount: i64) -> Result<(), SinkError> {
         extend_instance_ttl(&env);
         let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
-        env.storage().instance().set(&DataKey::SinkMinimum, &amount);
+        if amount < 0 {
+            panic_with_error!(&env, SinkError::NegativeAmount);
+        } else {
+            env.storage().instance().set(&DataKey::SinkMinimum, &amount);
+            Ok(())
+        }
     }
 
     pub fn reset_admin(env: Env) -> Address {

@@ -6,4 +6,5 @@ use soroban_sdk::contracterror;
 pub enum SinkError {
     ContractDeactivated = 1,
     AmountTooLow = 2,
+    NegativeAmount = 3,
 }
