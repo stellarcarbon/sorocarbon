@@ -5,7 +5,7 @@ use soroban_sdk::{
 };
 
 use crate::storage_types::{extend_instance_ttl, set_is_active, DataKey};
-use crate::errors::SinkError;
+use crate::errors::{SACError, SinkError};
 use crate::utils::quantize_to_kg;
 
 #[contract]
@@ -48,7 +48,22 @@ impl SinkContract {
         funder.require_auth();
         let carbon_id = env.storage().instance().get(&DataKey::CarbonID).unwrap();
         let carbon_client = TokenClient::new(&env, &carbon_id);
-        carbon_client.burn(&funder, &amount.into());
+        match carbon_client.try_burn(&funder, &amount.into()) {
+            Ok(_) => {}
+            Err(Ok(err)) => {
+                let error_code = err.get_code();
+                if error_code == SACError::BalanceError as u32 {
+                    // most likely the funder's CARBON balance is too low
+                    return Err(SinkError::InsufficientBalance);
+                } else if error_code == SACError::AccountMissingError as u32 {
+                    return Err(SinkError::AccountMissing);
+                } // re-panic for unexpected errors
+                panic_with_error!(&env, err);
+            },
+            Err(Err(invoke_err)) => {
+                panic!("InvokeError: {:?}", invoke_err);
+            }
+        }
 
         // `recipient` receives `amount` of CarbonSINK
         let carbonsink_id = env.storage().instance().get(&DataKey::CarbonSinkID).unwrap();

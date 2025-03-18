@@ -4,6 +4,7 @@ use soroban_sdk::{
     testutils::Address as _, token::TokenClient, Address,
 };
 
+use crate::errors::SinkError;
 use crate::tests::fixtures::set_up_contracts_and_funder;
 use crate::tests::utils::{SinkTestData, sink_carbon_with_auth};
 use crate::utils::quantize_to_kg;
@@ -129,4 +130,22 @@ fn test_sink_contract_inactive() {
     };
     // it should fail because the contract is not active
     assert!(sink_carbon_with_auth(&setup, &test_data).is_err());
+}
+
+#[test]
+fn test_funder_balance_too_low() {
+    let setup = set_up_contracts_and_funder(500);
+
+    // attempt to sink 0.1 CARBON
+    let test_data = SinkTestData { 
+        recipient: &setup.funder,
+        amount: 1_000_000_i64,
+        project_id: "VCS1360",
+        memo_text: "100 kg 🌳🌴",
+        email: ""
+    };
+    // it should fail because the funder has an insufficient balance
+    let sink_res = sink_carbon_with_auth(&setup, &test_data);
+    assert!(sink_res.is_err());
+    assert_eq!(sink_res.unwrap_err(), SinkError::InsufficientBalance);
 }
