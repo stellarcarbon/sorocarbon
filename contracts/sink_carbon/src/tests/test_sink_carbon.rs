@@ -175,5 +175,5 @@ fn test_funder_account_missing() {
         .try_sink_carbon(&funder, &funder, &amount, &project_id, &memo_text, &email);
     // it should fail because the funder account wasn't created
     assert!(sink_res.is_err());
-    assert_eq!(sink_res.unwrap_err().unwrap(), SinkError::AccountMissing);
+    assert_eq!(sink_res.unwrap_err().unwrap(), SinkError::AccountOrTrustlineMissing);
 }

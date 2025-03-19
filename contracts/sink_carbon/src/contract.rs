@@ -56,9 +56,9 @@ impl SinkContract {
                     // most likely the funder's CARBON balance is too low
                     return Err(SinkError::InsufficientBalance);
                 } else if error_code == SACError::TrustlineMissingError as u32 {
-                    // burn internals check the trustline first
+                    // burn internals check the trustline; account is only checked for native transfer
                     // TODO: test interactively with deployed contract
-                    return Err(SinkError::AccountMissing);
+                    return Err(SinkError::AccountOrTrustlineMissing);
                 } // re-panic for unexpected errors
                 panic_with_error!(&env, err);
             },
@@ -77,10 +77,9 @@ impl SinkContract {
                 let error_code = err.get_code();
                 if error_code == SACError::BalanceError as u32 {
                     return Err(SinkError::TrustlineLimitReached);
-                } else if error_code == SACError::AccountMissingError as u32 {
-                    return Err(SinkError::AccountMissing);
                 } else if error_code == SACError::TrustlineMissingError as u32 {
-                    return Err(SinkError::TrustlineMissing);
+                    // mint internals check the trustline; account is only checked for native transfer
+                    return Err(SinkError::AccountOrTrustlineMissing);
                 } // re-panic for unexpected errors
                 panic_with_error!(&env, err);
             },
