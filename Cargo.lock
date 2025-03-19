@@ -1062,7 +1062,9 @@ dependencies = [
 name = "sink_carbon"
 version = "0.0.0"
 dependencies = [
+ "soroban-env-host",
  "soroban-sdk",
+ "stellar-strkey",
 ]
 
 [[package]]

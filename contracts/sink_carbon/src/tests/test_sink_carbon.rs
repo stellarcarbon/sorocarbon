@@ -6,7 +6,7 @@ use soroban_sdk::token::TokenClient;
 
 use crate::errors::SinkError;
 use crate::tests::fixtures::set_up_contracts_and_funder;
-use crate::tests::utils::{SinkTestData, sink_carbon_with_auth};
+use crate::tests::utils::{SinkTestData, create_account_entry, sink_carbon_with_auth};
 use crate::utils::quantize_to_kg;
 
 #[test]
@@ -158,22 +158,35 @@ fn test_funder_balance_too_low() {
 }
 
 #[test]
-fn test_funder_account_missing() {
+fn test_funder_account_or_trustline_missing() {
     let setup = set_up_contracts_and_funder(0);
     let env = &setup.env;
     let client = &setup.sink_client;
 
-    let funder = Address::from_str(&setup.env, "GA2H3SJYGIUG2DXXUZ7IN3LNO2AIMVWCDCL25PKQHKMC76OWW3HYQHY4");
+    let funder_pubkey = "GA2H3SJYGIUG2DXXUZ7IN3LNO2AIMVWCDCL25PKQHKMC76OWW3HYQHY4";
+    let funder = Address::from_str(&setup.env, funder_pubkey);
     let amount = 1_000_000_i64;
     let project_id = Symbol::new(env, "VCS1360");
     let memo_text = String::from_str(env, "100 kg 🌳🌴");
     let email = String::from_str(env, "");
 
     // attempt to sink with non-existing account
+    // TODO: check native balance, should fail
     let sink_res = client
         .mock_all_auths()
         .try_sink_carbon(&funder, &funder, &amount, &project_id, &memo_text, &email);
     // it should fail because the funder account wasn't created
+    assert!(sink_res.is_err());
+    assert_eq!(sink_res.unwrap_err().unwrap(), SinkError::AccountOrTrustlineMissing);
+
+    // create a ledger entry for the funder Stellar Account
+    create_account_entry(env, funder_pubkey);
+    // TODO: check native balance, should succeed
+    // attempt to sink with non-existing trustline
+    let sink_res = client
+        .mock_all_auths()
+        .try_sink_carbon(&funder, &funder, &amount, &project_id, &memo_text, &email);
+    // it should fail because the trustline was never set up
     assert!(sink_res.is_err());
     assert_eq!(sink_res.unwrap_err().unwrap(), SinkError::AccountOrTrustlineMissing);
 }
