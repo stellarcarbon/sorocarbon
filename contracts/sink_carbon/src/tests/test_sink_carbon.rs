@@ -6,7 +6,9 @@ use soroban_sdk::token::TokenClient;
 
 use crate::errors::{SACError, SinkError};
 use crate::tests::fixtures::set_up_contracts_and_funder;
-use crate::tests::utils::{SinkTestData, create_account_entry, sink_carbon_with_auth};
+use crate::tests::utils::{
+    SinkTestData, create_account_entry, create_trustline, deploy_native_sac, sink_carbon_with_auth
+};
 use crate::utils::quantize_to_kg;
 
 #[test]
@@ -191,4 +193,46 @@ fn test_funder_account_or_trustline_missing() {
         .try_sink_carbon(&funder, &funder, &amount, &project_id, &memo_text, &email);
     // it should fail because the trustline was never set up
     assert_eq!(sink_res.unwrap_err().unwrap(), SinkError::AccountOrTrustlineMissing);
+}
+
+#[test]
+fn test_recipient_account_or_trustline_issues() {
+    let setup = set_up_contracts_and_funder(10_000_000);
+    let env = &setup.env;
+
+    let recipient_pubkey = "GBDCUWVK2SXI6DA6RD23KDBVIWMJSKLDEN3KZBIMX3TH23OJUR4YSQR4";
+    let recipient = Address::from_str(&setup.env, recipient_pubkey);
+
+    // attempt to sink 0.1 CARBON for the recipient
+    let test_data = SinkTestData { 
+        funder: &setup.funder,
+        recipient: &recipient,
+        amount: 1_000_000_i64,
+        project_id: "VCS1360",
+        memo_text: "100 kg 🌳🌴",
+        email: ""
+    };
+
+    // attempt to sink with non-existing recipient account
+    // TODO: check native balance, should fail
+    let sink_res = sink_carbon_with_auth(&setup, &test_data);
+    // it should fail because the recipient account wasn't created
+    assert_eq!(sink_res.unwrap_err(), SinkError::AccountOrTrustlineMissing);
+
+    // create a ledger entry for the recipient Stellar Account
+    create_account_entry(env, recipient_pubkey);
+    // TODO: check native balance, should succeed
+    // attempt to sink with non-existing trustline
+    let sink_res = sink_carbon_with_auth(&setup, &test_data);
+    // it should fail because the trustline was never set up
+    assert_eq!(sink_res.unwrap_err(), SinkError::AccountOrTrustlineMissing);
+
+    // create a ledger entry for the CarbonSINK trustline
+    create_trustline(
+        env, recipient_pubkey, &setup.carbon_sac.issuer(), [b'a', b'a', b'a', 0], 100
+    );
+    // attempt to sink with trustline that has a small limit
+    let sink_res = sink_carbon_with_auth(&setup, &test_data);
+    // it should fail because the trustline limit is too low
+    assert_eq!(sink_res.unwrap_err(), SinkError::TrustlineLimitReached);
 }

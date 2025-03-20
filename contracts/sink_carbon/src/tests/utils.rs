@@ -119,3 +119,57 @@ pub fn create_account_entry(env: &Env, pubkey: &str) {
         Ok(())
     }).unwrap();
 }
+
+pub fn create_trustline(
+    env: &Env, account: &str, asset_issuer: &StellarAssetIssuer, asset_code: [u8; 4], limit: i64
+) {
+    let account_raw_pubkey = stellar_strkey::ed25519::PublicKey::from_string(account)
+        .unwrap().0;
+        
+    let account_int = xdr::Uint256(account_raw_pubkey);
+    let account_id = xdr::AccountId(
+        xdr::PublicKey::PublicKeyTypeEd25519(account_int)
+    );
+    let issuer_sc_address = ScAddress::from(asset_issuer.address());
+    let issuer = match issuer_sc_address {
+        ScAddress::Account(issuer_account) => issuer_account,
+        _ => panic!("Failed to convert Address to AccountId")
+    };
+    
+    // Create the asset
+    let asset = xdr::TrustLineAsset::CreditAlphanum4(xdr::AlphaNum4 {
+        asset_code: xdr::AssetCode4(asset_code),
+        issuer,
+    });
+    
+    env.host().with_mut_storage(|storage| {
+        let key = Rc::new(xdr::LedgerKey::Trustline(xdr::LedgerKeyTrustLine {
+            account_id: account_id.clone(),
+            asset: asset.clone(),
+        }));
+        
+        // Create trustline entry
+        let limit = if limit < 1 { i64::MAX } else { limit };
+        let entry = Rc::new(xdr::LedgerEntry {
+            last_modified_ledger_seq: 0,
+            data: xdr::LedgerEntryData::Trustline(xdr::TrustLineEntry {
+                account_id,
+                asset,
+                balance: 0,
+                limit,
+                flags: 0, // Unauthorized
+                ext: xdr::TrustLineEntryExt::V0,
+            }),
+            ext: xdr::LedgerEntryExt::V0,
+        });
+        
+        storage.put(
+            &key,
+            &entry,
+            None,
+            soroban_env_host::budget::AsBudget::as_budget(env.host()),
+        ).unwrap();
+        
+        Ok(())
+    }).unwrap();
+}
