@@ -4,12 +4,12 @@ use soroban_sdk::contracterror;
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
 pub enum SinkError {
-    ContractDeactivated = 1,
-    AmountTooLow = 2,
-    NegativeAmount = 3,
-    InsufficientBalance = 4,
-    AccountOrTrustlineMissing = 5,
-    TrustlineLimitReached = 6,
+    ContractDeactivated = 1066,
+    AmountTooLow = 1067,
+    NegativeAmount = 1068,
+    InsufficientBalance = 1069,
+    AccountOrTrustlineMissing = 1070,
+    TrustlineLimitReached = 1071,
 }
 
 #[contracterror]

@@ -58,7 +58,7 @@ fn test_set_sink_minimum_unauthorized() {
 }
 
 #[test]
-#[should_panic = "HostError: Error(Contract, #3)"]
+#[should_panic = "HostError: Error(Contract, #1068)"]
 fn test_set_negative_sink_minimum() {
     let setup = set_up_contracts_and_funder(0);
     let client = setup.sink_client;
