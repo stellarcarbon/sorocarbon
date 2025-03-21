@@ -199,6 +199,8 @@ fn test_funder_account_or_trustline_missing() {
 fn test_recipient_account_or_trustline_issues() {
     let setup = set_up_contracts_and_funder(10_000_000);
     let env = &setup.env;
+    let native_asset_address = deploy_native_sac(env);
+    let native_client = token::Client::new(env, &native_asset_address);
 
     let recipient_pubkey = "GBDCUWVK2SXI6DA6RD23KDBVIWMJSKLDEN3KZBIMX3TH23OJUR4YSQR4";
     let recipient = Address::from_str(&setup.env, recipient_pubkey);
@@ -213,15 +215,19 @@ fn test_recipient_account_or_trustline_issues() {
         email: ""
     };
 
+    // check native balance, should fail
+    let xlm_balance_res = native_client.try_balance(&recipient);
+    assert_eq!(xlm_balance_res.unwrap_err().unwrap(), SACError::AccountMissingError.into());
     // attempt to sink with non-existing recipient account
-    // TODO: check native balance, should fail
     let sink_res = sink_carbon_with_auth(&setup, &test_data);
     // it should fail because the recipient account wasn't created
     assert_eq!(sink_res.unwrap_err(), SinkError::AccountOrTrustlineMissing);
 
     // create a ledger entry for the recipient Stellar Account
     create_account_entry(env, recipient_pubkey);
-    // TODO: check native balance, should succeed
+    // check native balance, should succeed
+    let xlm_balance = native_client.balance(&recipient);
+    assert_eq!(xlm_balance, 10_000_000_000);
     // attempt to sink with non-existing trustline
     let sink_res = sink_carbon_with_auth(&setup, &test_data);
     // it should fail because the trustline was never set up
@@ -229,10 +235,25 @@ fn test_recipient_account_or_trustline_issues() {
 
     // create a ledger entry for the CarbonSINK trustline
     create_trustline(
-        env, recipient_pubkey, &setup.carbon_sac.issuer(), [b'a', b'a', b'a', 0], 100
+        env, recipient_pubkey, &setup.carbonsink_sac.issuer(), [b'a', b'a', b'a', 0], 100
     );
     // attempt to sink with trustline that has a small limit
     let sink_res = sink_carbon_with_auth(&setup, &test_data);
     // it should fail because the trustline limit is too low
     assert_eq!(sink_res.unwrap_err(), SinkError::TrustlineLimitReached);
+
+    // for good measure, test the happy flow as well
+    create_trustline(
+        env, recipient_pubkey, &setup.carbonsink_sac.issuer(), [b'a', b'a', b'a', 0], -1
+    );
+    assert!(sink_carbon_with_auth(&setup, &test_data).is_ok());
+
+    // assert the effect on balances
+    let carbon_client = TokenClient::new(&setup.env, &setup.carbon_sac.address());
+    let carbonsink_client = TokenClient::new(&setup.env, &setup.carbonsink_sac.address());
+    assert_eq!(carbon_client.balance(&setup.funder), 9_000_000);
+    let recipient_balance_res = carbon_client.try_balance(test_data.recipient);
+    assert_eq!(recipient_balance_res.unwrap_err().unwrap(), SACError::TrustlineMissingError.into());
+    assert_eq!(carbonsink_client.balance(&setup.funder), 0);
+    assert_eq!(carbonsink_client.balance(test_data.recipient), 1_000_000);
 }
