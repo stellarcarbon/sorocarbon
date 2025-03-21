@@ -3,7 +3,7 @@
 extern crate std;
 use std::rc::Rc;
 
-use soroban_env_host::{Env as _, EnvBase};
+use soroban_env_host::{budget::AsBudget, Env as _, EnvBase};
 use soroban_sdk::xdr;
 use soroban_sdk::{
     testutils::{MockAuth, MockAuthInvoke, StellarAssetIssuer}, 
@@ -113,7 +113,7 @@ pub fn create_account_entry(env: &Env, pubkey: &str) {
             &key,
             &entry,
             None,
-            soroban_env_host::budget::AsBudget::as_budget(env.host()),
+            env.host().as_budget(),
         ).unwrap();
         
         Ok(())
@@ -167,7 +167,7 @@ pub fn create_trustline(
             &key,
             &entry,
             None,
-            soroban_env_host::budget::AsBudget::as_budget(env.host()),
+            env.host().as_budget(),
         ).unwrap();
         
         Ok(())
