@@ -14,3 +14,6 @@ fmt:
 
 clean:
 	cargo clean
+
+mutants:
+	RUSTFLAGS="-Clink-arg=-fuse-ld=mold" cargo mutants --profile=mutants
