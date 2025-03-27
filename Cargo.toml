@@ -21,3 +21,8 @@ lto = true
 [profile.release-with-logs]
 inherits = "release"
 debug-assertions = true
+
+[profile.mutants]
+inherits = "test"
+debug = "none"
+debug-assertions = false
