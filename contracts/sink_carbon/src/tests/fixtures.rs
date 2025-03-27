@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use soroban_sdk::{
-    testutils::{Address as _, IssuerFlags, MockAuth, MockAuthInvoke, StellarAssetContract},
+    testutils::{Address as _, IssuerFlags, Ledger, MockAuth, MockAuthInvoke, StellarAssetContract},
     token::StellarAssetClient,
     Address, Env, IntoVal,
 };
@@ -18,8 +18,8 @@ pub struct Setup<'a> {
     pub sink_client: SinkContractClient<'a>,
 }
 
-pub fn set_up_contracts_and_funder<'a>(funder_balance: i128) -> Setup<'a> {
-    let env = Env::default();
+pub fn set_up_contracts_and_funder<'a>(funder_balance: i128, env_opt: Option<Env>) -> Setup<'a> {
+    let env = env_opt.unwrap_or_default();
     let funder = Address::generate(&env);
     let carbon_issuer = Address::generate(&env);  // this is a C-address
     let carbonsink_issuer = Address::generate(&env);  // this is a C-address
@@ -67,4 +67,26 @@ pub fn set_up_contracts_and_funder<'a>(funder_balance: i128) -> Setup<'a> {
     Setup {
         env, funder, carbon_sac, carbonsink_issuer, carbonsink_sac, contract_id, sink_client,
     }
+}
+
+pub fn create_env_with_ttl_settings(max_entry_ttl: u32) -> Env {
+    let env = Env::default();
+    env.ledger().with_mut(|li| {
+        // Current ledger sequence
+        li.sequence_number = 100_000;
+        // Minimum TTL for new instance and persistent entries
+        // set to a value that avoids auth entry issues
+        li.min_persistent_entry_ttl = 35_001;
+        // Minimum TTL for new temporary entries
+        li.min_temp_entry_ttl = 1_001;
+        // Maximum TTL of any entry
+        li.max_entry_ttl = max_entry_ttl;
+    });
+    env
+}
+
+pub fn set_up_contracts_with_ttl_settings<'a>(max_entry_ttl: u32) -> Setup<'a> {
+    let env = create_env_with_ttl_settings(max_entry_ttl);
+    let setup = set_up_contracts_and_funder(10_000_000, Some(env));
+    setup
 }

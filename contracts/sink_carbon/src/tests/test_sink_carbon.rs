@@ -24,7 +24,7 @@ fn test_quantize_to_kg() {
 
 #[test]
 fn test_sink_carbon_happy() {
-    let setup = set_up_contracts_and_funder(10_000_000);
+    let setup = set_up_contracts_and_funder(10_000_000, None);
 
     // have the funder sink 0.1 CARBON
     let test_data = SinkTestData { 
@@ -46,7 +46,7 @@ fn test_sink_carbon_happy() {
 
 #[test]
 fn test_sink_carbon_twice() {
-    let setup = set_up_contracts_and_funder(10_000_000);
+    let setup = set_up_contracts_and_funder(10_000_000, None);
 
     // have the funder sink 0.3 CARBON
     let test_data_a = SinkTestData { 
@@ -74,7 +74,7 @@ fn test_sink_carbon_twice() {
 
 #[test]
 fn test_sink_carbon_separate_recipient() {
-    let setup = set_up_contracts_and_funder(10_000_000);
+    let setup = set_up_contracts_and_funder(10_000_000, None);
 
     // have the funder sink 0.333 CARBON for the recipient
     let test_data = SinkTestData { 
@@ -98,7 +98,7 @@ fn test_sink_carbon_separate_recipient() {
 
 #[test]
 fn test_sink_amount_too_low() {
-    let setup = set_up_contracts_and_funder(10_000_000);
+    let setup = set_up_contracts_and_funder(10_000_000, None);
 
     // attempt to sink 0.099 CARBON
     let test_data = SinkTestData {
@@ -123,7 +123,7 @@ fn test_sink_amount_too_low() {
 #[test]
 #[should_panic = "ContractDeactivated"]
 fn test_sink_contract_inactive() {
-    let setup = set_up_contracts_and_funder(10_000_000);
+    let setup = set_up_contracts_and_funder(10_000_000, None);
     setup.sink_client.mock_all_auths().deactivate();
 
     // attempt to sink 1 CARBON
@@ -141,7 +141,7 @@ fn test_sink_contract_inactive() {
 
 #[test]
 fn test_funder_balance_too_low() {
-    let setup = set_up_contracts_and_funder(500);
+    let setup = set_up_contracts_and_funder(500, None);
 
     // attempt to sink 0.1 CARBON
     let test_data = SinkTestData { 
@@ -159,7 +159,7 @@ fn test_funder_balance_too_low() {
 
 #[test]
 fn test_funder_account_or_trustline_missing() {
-    let setup = set_up_contracts_and_funder(0);
+    let setup = set_up_contracts_and_funder(0, None);
     let env = &setup.env;
     let client = &setup.sink_client;
     let native_asset_address = deploy_native_sac(env);
@@ -197,7 +197,7 @@ fn test_funder_account_or_trustline_missing() {
 
 #[test]
 fn test_recipient_account_or_trustline_issues() {
-    let setup = set_up_contracts_and_funder(10_000_000);
+    let setup = set_up_contracts_and_funder(10_000_000, None);
     let env = &setup.env;
     let native_asset_address = deploy_native_sac(env);
     let native_client = token::Client::new(env, &native_asset_address);

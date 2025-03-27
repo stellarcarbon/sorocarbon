@@ -8,7 +8,7 @@ use crate::tests::fixtures::set_up_contracts_and_funder;
 
 #[test]
 fn test_get_sink_minimum_default() {
-    let setup = set_up_contracts_and_funder(0);
+    let setup = set_up_contracts_and_funder(0, None);
     let client = setup.sink_client;
     let minimum = client.get_minimum_sink_amount();
     assert_eq!(minimum, 1_000_000)
@@ -16,7 +16,7 @@ fn test_get_sink_minimum_default() {
 
 #[test]
 fn test_set_sink_minimum_as_admin() {
-    let setup = set_up_contracts_and_funder(0);
+    let setup = set_up_contracts_and_funder(0, None);
     let client = setup.sink_client;
     let admin = setup.carbonsink_issuer;
 
@@ -40,7 +40,7 @@ fn test_set_sink_minimum_as_admin() {
 #[test]
 #[should_panic = "HostError: Error(Auth, InvalidAction)"]
 fn test_set_sink_minimum_unauthorized() {
-    let setup = set_up_contracts_and_funder(0);
+    let setup = set_up_contracts_and_funder(0, None);
     let client = setup.sink_client;
 
     // set minimum as a random address should fail
@@ -60,7 +60,7 @@ fn test_set_sink_minimum_unauthorized() {
 #[test]
 #[should_panic = "HostError: Error(Contract, #1068)"]
 fn test_set_negative_sink_minimum() {
-    let setup = set_up_contracts_and_funder(0);
+    let setup = set_up_contracts_and_funder(0, None);
     let client = setup.sink_client;
     let admin = setup.carbonsink_issuer;
 
@@ -80,7 +80,7 @@ fn test_set_negative_sink_minimum() {
 
 #[test]
 fn test_activate_deactivate() {
-    let setup = set_up_contracts_and_funder(0);
+    let setup = set_up_contracts_and_funder(0, None);
     let client = setup.sink_client;
     let admin = setup.carbonsink_issuer;
 
@@ -124,7 +124,7 @@ fn test_activate_deactivate() {
 #[test]
 #[should_panic = "HostError: Error(Auth, InvalidAction)"]
 fn test_deactivate_unauthorized() {
-    let setup = set_up_contracts_and_funder(0);
+    let setup = set_up_contracts_and_funder(0, None);
     let client = setup.sink_client;
 
     // it should fail because the call lacks admin auth
@@ -133,7 +133,7 @@ fn test_deactivate_unauthorized() {
 
 #[test]
 fn test_reset_admin() {
-    let setup = set_up_contracts_and_funder(0);
+    let setup = set_up_contracts_and_funder(0, None);
     let client = setup.sink_client;
     let admin = setup.carbonsink_issuer;
     let carbonsink_sac = setup.carbonsink_sac;
