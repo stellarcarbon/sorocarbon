@@ -1,8 +1,11 @@
 #![cfg(test)]
 
-use soroban_sdk::testutils::{storage::Instance, Ledger};
+use soroban_env_host::HostError;
+use soroban_sdk::testutils::{storage::Instance, Deployer, Ledger};
+use soroban_sdk::xdr::{ScErrorCode, ScErrorType};
 
-use crate::tests::{fixtures::set_up_contracts_with_ttl_settings, utils::{sink_carbon_with_auth, SinkTestData}};
+use crate::tests::fixtures::set_up_contracts_with_ttl_settings;
+use crate::tests::utils::{sink_carbon_with_auth, SinkTestData};
 
 const DAY_IN_LEDGERS: u32 = 17280;
 
@@ -11,9 +14,7 @@ fn test_extend_ttl_sink_carbon() {
     let setup = set_up_contracts_with_ttl_settings(60 * DAY_IN_LEDGERS);
     let env = setup.env.clone();
 
-    // Create initial entries and make sure their TTLs correspond to
-    // `min_persistent_entry_ttl` and `min_temp_entry_ttl` values set in
-    // `create_env()`.
+    // Check initial ledger/network settings
     env.as_contract(&setup.contract_id, || {
         // Note, that TTL doesn't include the current ledger, but when entry
         // is created the current ledger is counted towards the number of
@@ -40,7 +41,6 @@ fn test_extend_ttl_sink_carbon() {
     env.as_contract(&setup.contract_id, || {
         assert_eq!(30 * DAY_IN_LEDGERS, env.storage().instance().get_ttl());
     });
-
     // Now bump the ledger sequence by 2 days in order to sanity-check
     // the threshold settings of `extend_ttl` operations.
     env.ledger().with_mut(|li| {
@@ -63,28 +63,52 @@ fn test_extend_ttl_is_active() {
     let env = setup.env.clone();
     let client = setup.sink_client;
 
-    env.as_contract(&setup.contract_id, || {
-        assert_eq!(35_000, env.storage().instance().get_ttl());
-    });
+    // check the contract code & instance TTL in this test
+    assert_eq!(35_000, env.deployer().get_contract_code_ttl(&setup.contract_id));
+    assert_eq!(35_000, env.deployer().get_contract_instance_ttl(&setup.contract_id));
     assert_eq!(true, client.is_active());
 
     // expected TTL is 30 days
-    env.as_contract(&setup.contract_id, || {
-        assert_eq!(30 * DAY_IN_LEDGERS, env.storage().instance().get_ttl());
-    });
+    assert_eq!(30 * DAY_IN_LEDGERS, env.deployer().get_contract_code_ttl(&setup.contract_id));
+    assert_eq!(30 * DAY_IN_LEDGERS, env.deployer().get_contract_instance_ttl(&setup.contract_id));
 
-    // Now bump the ledger sequence by 2 days in order to sanity-check
-    // the threshold settings of `extend_ttl` operations.
+    // advance the ledger by 2 days
     env.ledger().with_mut(|li| {
         li.sequence_number = 100_000 + 2 * DAY_IN_LEDGERS;
     });
-    env.as_contract(&setup.contract_id, || {
-        assert_eq!(28 * DAY_IN_LEDGERS, env.storage().instance().get_ttl());
-    });
+    assert_eq!(28 * DAY_IN_LEDGERS, env.deployer().get_contract_code_ttl(&setup.contract_id));
+    assert_eq!(28 * DAY_IN_LEDGERS, env.deployer().get_contract_instance_ttl(&setup.contract_id));
 
     // call is_active again, expected TTL is back to 30 days
     assert_eq!(true, client.is_active());
-    env.as_contract(&setup.contract_id, || {
-        assert_eq!(30 * DAY_IN_LEDGERS, env.storage().instance().get_ttl());
+    assert_eq!(30 * DAY_IN_LEDGERS, env.deployer().get_contract_code_ttl(&setup.contract_id));
+    assert_eq!(30 * DAY_IN_LEDGERS, env.deployer().get_contract_instance_ttl(&setup.contract_id));
+}
+
+#[test]
+fn test_contract_archival() {
+    let setup = set_up_contracts_with_ttl_settings(60 * DAY_IN_LEDGERS);
+    let env = setup.env.clone();
+    let client = setup.sink_client;
+
+    assert_eq!(35_000, env.deployer().get_contract_code_ttl(&setup.contract_id));
+
+    // advance the ledger by 2 days
+    const TWO_DAYS: u32 = 2 * DAY_IN_LEDGERS;
+    env.ledger().with_mut(|li| {
+        li.sequence_number += TWO_DAYS;
     });
+    assert_eq!(35_000 - TWO_DAYS, env.deployer().get_contract_code_ttl(&setup.contract_id));
+
+    // extend TTL with get_minimum_sink_amount
+    assert!(client.get_minimum_sink_amount() > 0);
+    assert_eq!(30 * DAY_IN_LEDGERS, env.deployer().get_contract_code_ttl(&setup.contract_id));
+
+    // advance the ledger by 31 days
+    env.ledger().with_mut(|li| {
+        li.sequence_number += 31 * DAY_IN_LEDGERS;
+    });
+    // the contract TTL is expected to have expired: this contract is archived
+    let ttl_res = env.host().get_contract_code_live_until_ledger(setup.contract_id.to_object());
+    assert!(HostError::result_matches_err(ttl_res, (ScErrorType::Storage, ScErrorCode::InternalError)))
 }
