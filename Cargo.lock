@@ -1054,7 +1054,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sink_carbon"
+name = "sink-carbon"
 version = "0.0.0"
 dependencies = [
  "soroban-env-host",
