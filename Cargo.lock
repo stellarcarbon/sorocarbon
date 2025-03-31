@@ -1055,11 +1055,11 @@ dependencies = [
 
 [[package]]
 name = "sink-carbon"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "soroban-env-host",
  "soroban-sdk",
- "stellar-strkey 0.0.13",
+ "stellar-strkey",
 ]
 
 [[package]]
@@ -1141,7 +1141,7 @@ dependencies = [
  "soroban-env-common",
  "soroban-wasmi",
  "static_assertions",
- "stellar-strkey 0.0.9",
+ "stellar-strkey",
  "wasmparser",
 ]
 
@@ -1193,7 +1193,7 @@ dependencies = [
  "soroban-env-host",
  "soroban-ledger-snapshot",
  "soroban-sdk-macros",
- "stellar-strkey 0.0.9",
+ "stellar-strkey",
 ]
 
 [[package]]
@@ -1291,16 +1291,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "stellar-strkey"
-version = "0.0.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee1832fb50c651ad10f734aaf5d31ca5acdfb197a6ecda64d93fcdb8885af913"
-dependencies = [
- "crate-git-revision",
- "data-encoding",
-]
-
-[[package]]
 name = "stellar-xdr"
 version = "22.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1313,7 +1303,7 @@ dependencies = [
  "hex",
  "serde",
  "serde_with",
- "stellar-strkey 0.0.9",
+ "stellar-strkey",
 ]
 
 [[package]]
