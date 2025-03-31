@@ -1,0 +1,29 @@
+name: Build and Release
+on:
+  push: 
+    tags:
+      - 'v*'  # TODO: reconfigure in case of multiple contracts
+
+permissions:
+  id-token: write
+  contents: write
+  attestations: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: rustup update
+    - run: cargo test
+
+  release-sink-carbon:
+    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@fbd0e2c5bbcbcd22439c06b5f1da47e2b27672d4
+    with:
+      release_name: ${{ github.ref_name }}          # use git tag as unique release name
+      release_description: "Unaudited SinkContract ${{ github.ref_name }}"
+      home_domain: 'stellarcarbon.io'               # home domain for the contract
+      relative_path: '["src/sink-carbon"]'          # relative path to the contract
+      package: 'sink-carbon'                        # package name to build
+    secrets:
+      release_token: ${{ secrets.GITHUB_TOKEN }}
