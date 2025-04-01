@@ -17,7 +17,8 @@ This repository uses the recommended structure for a Soroban project:
 │       │   ├── lib.rs
 │       │   ├── storage_types.rs
 │       │   └── utils.rs
-│       └── Cargo.toml
+│       ├── Cargo.toml
+│       └── README.md
 ├── Cargo.toml
 └── README.md
 ```
