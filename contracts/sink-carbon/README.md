@@ -95,7 +95,7 @@ stellar contract invoke \
   --_email "account@domain.xyz"
 ```
 
-Try to sink without CARBON trustline on funder:
+Try to sink without CARBON trustline on funder, expected `AccountOrTrustlineMissing`:
 
 ```text
 ❌ error: transaction simulation failed: HostError: Error(Contract, #1070)
@@ -108,7 +108,7 @@ Event log (newest first):
    4: [Diagnostic Event] topics:[fn_call, CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV, sink_carbon], data:[GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, 1000000, VCS1360, "first", "account@domain.xyz"]
 ```
 
-Try to sink with insufficient CARBON balance on funder:
+Try to sink with insufficient CARBON balance on funder, expected `InsufficientBalance`:
 
 ```text
 ❌ error: transaction simulation failed: HostError: Error(Contract, #1069)
@@ -121,21 +121,34 @@ Event log (newest first):
    4: [Diagnostic Event] topics:[fn_call, CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV, sink_carbon], data:[GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, 1000000, VCS1360, "first", "account@domain.xyz"]
 ```
 
-Try to sink without CarbonSINK trustline on the recipient:
+Try to sink without CarbonSINK trustline on the recipient, expected `AccountOrTrustlineMissing`:
 
 ```text
-❌ error: transaction simulation failed: HostError: Error(Context, UnexpectedType)
+❌ error: transaction simulation failed: HostError: Error(Contract, #1070)
 
 Event log (newest first):
-   0: [Diagnostic Event] contract:CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV, topics:[error, Error(Context, UnexpectedType)], data:"escalating error to VM trap from failed host function call: fail_with_error"
-   1: [Diagnostic Event] contract:CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV, topics:[error, Error(Context, UnexpectedType)], data:["contract attempted to fail with non-ContractError error code", Error(Context, InvalidAction)]
-   2: [Diagnostic Event] contract:CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV, topics:[error, Error(Auth, InvalidAction)], data:["contract try_call failed", set_authorized, [GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, true]]
-   3: [Failed Diagnostic Event (not emitted)] contract:CCUQDX22YTF72Q2F5C4HZSWVMBFTPTLIYXOC3BSNTBSZVJWKMMNUOWXH, topics:[error, Error(Auth, InvalidAction)], data:["[recording authorization only] encountered authorization not tied to the root contract invocation for an address. Use `require_auth()` in the top invocation or enable non-root authorization.", GBO66IRGFZE7UP7MAM5H5IBMZLTM64XE6YNOL4KSL2BFVH7JW6AEKZHO]
-   4: [Diagnostic Event] contract:CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV, topics:[fn_call, CCUQDX22YTF72Q2F5C4HZSWVMBFTPTLIYXOC3BSNTBSZVJWKMMNUOWXH, set_authorized], data:[GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, true]
-   5: [Diagnostic Event] contract:CCVMSAUB5RSCN7VFA2GESPVGRBNDHLQG5YDA7DST63OXJB5YBZGKEUVU, topics:[fn_return, burn], data:Void
-   6: [Contract Event] contract:CCVMSAUB5RSCN7VFA2GESPVGRBNDHLQG5YDA7DST63OXJB5YBZGKEUVU, topics:[burn, GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, "CARBON:GDT5XM5C5STQZS5R3F4CEGKJWKDVWBIWBEV4TIYV5MDVVMKA775T4OKY"], data:1000000
-   7: [Diagnostic Event] contract:CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV, topics:[fn_call, CCVMSAUB5RSCN7VFA2GESPVGRBNDHLQG5YDA7DST63OXJB5YBZGKEUVU, burn], data:[GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, 1000000]
-   8: [Diagnostic Event] topics:[fn_call, CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV, sink_carbon], data:[GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, 1000000, VCS1360, "first", "account@domain.xyz"]
+   0: [Diagnostic Event] contract:CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV, topics:[error, Error(Contract, #1070)], data:"escalating Ok(ScErrorType::Contract) frame-exit to Err"
+   1: [Diagnostic Event] contract:CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV, topics:[error, Error(Contract, #13)], data:["contract try_call failed", set_authorized, [GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, true]]
+   2: [Failed Diagnostic Event (not emitted)] contract:CCUQDX22YTF72Q2F5C4HZSWVMBFTPTLIYXOC3BSNTBSZVJWKMMNUOWXH, topics:[error, Error(Contract, #13)], data:["trustline entry is missing for account", GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL]
+   3: [Diagnostic Event] contract:CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV, topics:[fn_call, CCUQDX22YTF72Q2F5C4HZSWVMBFTPTLIYXOC3BSNTBSZVJWKMMNUOWXH, set_authorized], data:[GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, true]
+   4: [Diagnostic Event] contract:CCVMSAUB5RSCN7VFA2GESPVGRBNDHLQG5YDA7DST63OXJB5YBZGKEUVU, topics:[fn_return, burn], data:Void
+   5: [Contract Event] contract:CCVMSAUB5RSCN7VFA2GESPVGRBNDHLQG5YDA7DST63OXJB5YBZGKEUVU, topics:[burn, GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, "CARBON:GDT5XM5C5STQZS5R3F4CEGKJWKDVWBIWBEV4TIYV5MDVVMKA775T4OKY"], data:1000000
+   6: [Diagnostic Event] contract:CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV, topics:[fn_call, CCVMSAUB5RSCN7VFA2GESPVGRBNDHLQG5YDA7DST63OXJB5YBZGKEUVU, burn], data:[GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, 1000000]
+   7: [Diagnostic Event] topics:[fn_call, CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV, sink_carbon], data:[GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL, 1000000, VCS1360, "first", "account@domain.xyz"]
 ```
 
-This is an actual auth issue. The expected error is `AccountOrTrustlineMissing`.
+And finally, call `sink_carbon` again with all preconditions in place:
+
+```text
+ℹ️  Signing transaction: 592a39e5070fcc2fa31d02cf971cc3f14992e3add8e3731afae4d572c9dcc0e6
+📅 CCVMSAUB5RSCN7VFA2GESPVGRBNDHLQG5YDA7DST63OXJB5YBZGKEUVU - Event: [{"symbol":"burn"},{"address":"GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL"},{"string":"CARBON:GDT5XM5C5STQZS5R3F4CEGKJWKDVWBIWBEV4TIYV5MDVVMKA775T4OKY"}] = {"i128":{"hi":0,"lo":1000000}}
+📅 CCUQDX22YTF72Q2F5C4HZSWVMBFTPTLIYXOC3BSNTBSZVJWKMMNUOWXH - Event: [{"symbol":"set_authorized"},{"address":"CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV"},{"address":"GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL"},{"string":"CarbonSINK:GBO66IRGFZE7UP7MAM5H5IBMZLTM64XE6YNOL4KSL2BFVH7JW6AEKZHO"}] = {"bool":true}
+📅 CCUQDX22YTF72Q2F5C4HZSWVMBFTPTLIYXOC3BSNTBSZVJWKMMNUOWXH - Event: [{"symbol":"mint"},{"address":"CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV"},{"address":"GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL"},{"string":"CarbonSINK:GBO66IRGFZE7UP7MAM5H5IBMZLTM64XE6YNOL4KSL2BFVH7JW6AEKZHO"}] = {"i128":{"hi":0,"lo":1000000}}
+📅 CCUQDX22YTF72Q2F5C4HZSWVMBFTPTLIYXOC3BSNTBSZVJWKMMNUOWXH - Event: [{"symbol":"set_authorized"},{"address":"CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV"},{"address":"GAN4SL6DHOQO4POKWOUL4PPCIVJBSDX7SVOLL4GVM4CC27S6WCV7FQZL"},{"string":"CarbonSINK:GBO66IRGFZE7UP7MAM5H5IBMZLTM64XE6YNOL4KSL2BFVH7JW6AEKZHO"}] = {"bool":false}
+```
+
+The events that are emitted by the two SACs reveal what happens inside the `sink_carbon` function.
+First, the `funder` burns the `amount` of CARBON.
+Then, the `recipient`'s CarbonSINK trustline/balance is authorized,
+and the same `amount` of CarbonSINK is minted for the `recipient`.
+Finally, the CarbonSINK trustline is deauthorized again to lock the balance.
