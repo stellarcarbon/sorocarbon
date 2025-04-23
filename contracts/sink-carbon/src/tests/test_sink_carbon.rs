@@ -1,5 +1,3 @@
-#![cfg(test)]
-
 use soroban_sdk::{token, Address, String, Symbol};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::token::TokenClient;

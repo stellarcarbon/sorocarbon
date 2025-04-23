@@ -1,5 +1,3 @@
-#![cfg(test)]
-
 use soroban_sdk::token::StellarAssetClient;
 use soroban_sdk::{Address, IntoVal};
 use soroban_sdk::testutils::{Address as _, MockAuth, MockAuthInvoke};

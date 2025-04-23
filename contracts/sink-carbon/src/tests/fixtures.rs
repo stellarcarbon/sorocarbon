@@ -1,5 +1,3 @@
-#![cfg(test)]
-
 use soroban_sdk::{
     testutils::{Address as _, IssuerFlags, Ledger, MockAuth, MockAuthInvoke, StellarAssetContract},
     token::StellarAssetClient,

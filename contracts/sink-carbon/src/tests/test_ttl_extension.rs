@@ -1,5 +1,3 @@
-#![cfg(test)]
-
 use soroban_env_host::HostError;
 use soroban_sdk::testutils::{storage::Instance, Deployer, Ledger};
 use soroban_sdk::xdr::{ScErrorCode, ScErrorType};
