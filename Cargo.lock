@@ -248,6 +248,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 
 [[package]]
+name = "convert_case"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
+dependencies = [
+ "unicode-segmentation",
+]
+
+[[package]]
 name = "core-foundation-sys"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -905,6 +914,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "retroshade-sdk"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "297d44a66409e3f3883fe3947538d90c2cfb1db0d7d8dcf069e49b9d1c13bb26"
+dependencies = [
+ "retroshade-sdk-macros",
+]
+
+[[package]]
+name = "retroshade-sdk-macros"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a39d64547898788e802225b6f7e554a35ad37126f5a97cd6721b219c7782a288"
+dependencies = [
+ "convert_case",
+ "quote",
+ "syn 2.0.100",
+]
+
+[[package]]
 name = "rfc6979"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1057,6 +1086,7 @@ dependencies = [
 name = "sink-carbon"
 version = "0.1.0"
 dependencies = [
+ "retroshade-sdk",
  "soroban-env-host",
  "soroban-sdk",
  "stellar-strkey",
@@ -1402,6 +1432,12 @@ name = "unicode-ident"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5a5f39404a5da50712a4c1eecf25e90dd62b613502b7e925fd4e4d19b5c96512"
+
+[[package]]
+name = "unicode-segmentation"
+version = "1.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6ccf251212114b54433ec949fd6a7841275f9ada20dddd2f29e9ceea4501493"
 
 [[package]]
 name = "version_check"

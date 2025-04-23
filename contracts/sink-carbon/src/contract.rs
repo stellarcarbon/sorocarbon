@@ -4,9 +4,10 @@ use soroban_sdk::{
     Address, Env, String, Symbol
 };
 
-use crate::storage_types::{extend_instance_ttl, set_is_active, DataKey};
 use crate::errors::{SACError, SinkError};
+use crate::storage_types::{extend_instance_ttl, set_is_active, DataKey};
 use crate::utils::quantize_to_kg;
+
 
 #[contract]
 pub struct SinkContract;
@@ -26,9 +27,9 @@ impl SinkContract {
         funder: Address, 
         recipient: Address, 
         amount: i64, 
-        _project_id: Symbol,
-        _memo_text: String,
-        _email: String,
+        project_id: Symbol,
+        memo_text: String,
+        email: String,
     ) -> Result<(), SinkError> {
         extend_instance_ttl(&env);
         if !Self::is_active(env.clone()) {
@@ -57,7 +58,6 @@ impl SinkContract {
                     return Err(SinkError::InsufficientBalance);
                 } else if error_code == SACError::TrustlineMissingError as u32 {
                     // burn internals check the trustline; account is only checked for native transfer
-                    // TODO: test interactively with deployed contract
                     return Err(SinkError::AccountOrTrustlineMissing);
                 } // re-panic for unexpected errors
                 panic_with_error!(&env, err);
@@ -96,6 +96,18 @@ impl SinkContract {
             }
         }
         carbonsink_client.set_authorized(&recipient, &false);
+
+        // emit sink event
+        #[cfg(feature = "mercury")]
+        crate::retroshades::SinkEvent {
+            funder,
+            recipient,
+            amount,
+            project_id,
+            memo_text,
+            email,
+        }
+        .emit(&env);
 
         Ok(())
     }

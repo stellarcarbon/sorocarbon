@@ -1,7 +1,8 @@
 #![no_std]
 
 mod contract;
-mod storage_types;
 mod errors;
+mod retroshades;
+mod storage_types;
 mod utils;
 mod tests;
