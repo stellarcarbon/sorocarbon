@@ -63,9 +63,9 @@ stellar contract invoke \
   --funder "$(stellar keys address sinker)" \
   --recipient "$(stellar keys address sinker)" \
   --amount "0" \
-  --_project_id "VCS1360" \
-  --_memo_text "no-op ledger bloat" \
-  --_email "account@domain.xyz"
+  --project_id "VCS1360" \
+  --memo_text "no-op ledger bloat" \
+  --email "account@domain.xyz"
 ```
 
 This should fail with `AmountTooLow`:
@@ -90,9 +90,9 @@ stellar contract invoke \
   --funder "$(stellar keys address sinker)" \
   --recipient "$(stellar keys address sinker)" \
   --amount "1000000" \
-  --_project_id "VCS1360" \
-  --_memo_text "first" \
-  --_email "account@domain.xyz"
+  --project_id "VCS1360" \
+  --memo_text "first" \
+  --email "account@domain.xyz"
 ```
 
 Try to sink without CARBON trustline on funder, expected `AccountOrTrustlineMissing`:
