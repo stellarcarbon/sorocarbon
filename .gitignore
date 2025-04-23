@@ -16,3 +16,6 @@ mutants.out*/
 /.sccache/
 .soroban
 .stellar
+
+# secrets
+.env
