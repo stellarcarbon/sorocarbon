@@ -6,6 +6,6 @@
     },
     "debug.allowBreakpointsEverywhere": true,
     "rust-analyzer.cargo.features": [
-        "mercury",
+        // "mercury",
     ]
 }

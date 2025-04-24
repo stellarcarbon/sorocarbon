@@ -12,4 +12,5 @@ pub struct SinkEvent {
     pub project_id: Symbol,
     pub memo_text: String,
     pub email: String,
+    pub ledger: u32,
 }

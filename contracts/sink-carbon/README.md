@@ -4,6 +4,26 @@ The sink-carbon contract is the primary interface to use Stellarcarbon on Soroba
 To do an atomic swap of CARBON for CarbonSINK, call the `sink_carbon` function.
 The contract also includes several supporting and admin functions.
 
+## Mercury Catch-up
+
+Deploying a new retroshade contract will drop any existing event tables.
+To fill a new table with recent events (within the RPC retention window), run:
+
+```sh
+mercury-cli \
+  --key $MERCURY_KEY \
+  --mainnet false \
+  --local false \
+  catchup \
+  --retroshades true \
+  --project-name "sorocarbon" \
+  --contracts "$(stellar contract alias show sink --network=testnet)" \
+  --functions "sink_carbon" \
+  --start=<FIRST_TX_LEDGER>
+```
+
+You may need to customize this command if you've customized the deployment of your retroshade.
+
 ## Interactive Testing
 
 We can do some interactive testing with a contract that is deployed on testnet.

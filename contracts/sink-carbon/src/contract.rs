@@ -31,6 +31,25 @@ impl SinkContract {
         memo_text: String,
         email: String,
     ) -> Result<(), SinkError> {
+        #[cfg(feature = "mercury")]
+        {
+            // emit sink event
+            crate::retroshades::SinkEvent {
+                funder,
+                recipient,
+                amount,
+                project_id,
+                memo_text,
+                email,
+                ledger: env.ledger().sequence(),
+            }
+            .emit(&env);
+            // and return early to spare the ZVM
+            return Ok(());
+        }
+        #[allow(unused)]
+        let (project_id, memo_text, email) = (project_id, memo_text, email);
+
         extend_instance_ttl(&env);
         if !Self::is_active(env.clone()) {
             panic_with_error!(&env, SinkError::ContractDeactivated);
@@ -96,18 +115,6 @@ impl SinkContract {
             }
         }
         carbonsink_client.set_authorized(&recipient, &false);
-
-        // emit sink event
-        #[cfg(feature = "mercury")]
-        crate::retroshades::SinkEvent {
-            funder,
-            recipient,
-            amount,
-            project_id,
-            memo_text,
-            email,
-        }
-        .emit(&env);
 
         Ok(())
     }
