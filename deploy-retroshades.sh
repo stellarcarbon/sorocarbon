@@ -23,4 +23,6 @@ mercury_args=(
     --target $wasm_bin
 )
 
-mercury-cli "${mercury_args[@]}"
+mercury-cli "${mercury_args[@]}" || exit 1
+
+printf "\nREMEMBER TO UPDATE THE MD5 WASM HASH IN THE ENVS"
