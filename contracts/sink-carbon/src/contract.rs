@@ -129,7 +129,24 @@ impl SinkContract {
         env.storage().instance().get(&DataKey::IsActive).unwrap()
     }
 
+    pub fn get_contract_successor(env: Env) -> Address {
+        extend_instance_ttl(&env);
+
+        // provide current contract address if this func is called when contract is still active
+        env.storage().instance().get(&DataKey::ContractSuccessor).unwrap_or(
+            env.current_contract_address()
+        )
+    }
+
     // ADMIN FUNCTIONS
+
+    pub fn set_contract_successor(env: Env, successor: Address) {
+        extend_instance_ttl(&env);
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        admin.require_auth();
+
+        env.storage().instance().set(&DataKey::ContractSuccessor, &successor);
+    }
 
     pub fn set_minimum_sink_amount(env: Env, amount: i64) -> Result<(), SinkError> {
         extend_instance_ttl(&env);
