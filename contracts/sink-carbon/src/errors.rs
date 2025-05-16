@@ -10,7 +10,6 @@ pub enum SinkError {
     InsufficientBalance = 1069,
     AccountOrTrustlineMissing = 1070,
     TrustlineLimitReached = 1071,
-    InvalidAddress = 1072,
 }
 
 #[contracterror]

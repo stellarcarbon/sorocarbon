@@ -20,7 +20,6 @@ impl SinkContract {
         env.storage().instance().set(&DataKey::CarbonSinkID, &carbonsink_id);
         env.storage().instance().set(&DataKey::IsActive, &true);
         env.storage().instance().set(&DataKey::SinkMinimum, &1_000_000_i64);  // 100 kg
-        env.storage().instance().set(&DataKey::ContractSuccessor, &carbonsink_id);
     }
 
     pub fn sink_carbon(
@@ -132,23 +131,21 @@ impl SinkContract {
 
     pub fn get_contract_successor(env: Env) -> Address {
         extend_instance_ttl(&env);
-        env.storage().instance().get(&DataKey::ContractSuccessor).unwrap()
+
+        // provide current contract address if this func is called when contract is still active
+        env.storage().instance().get(&DataKey::ContractSuccessor).unwrap_or(
+            env.current_contract_address()
+        )
     }
 
     // ADMIN FUNCTIONS
 
-    pub fn set_contract_successor(env: Env, successor: Address) -> Result<(), SinkError> {
+    pub fn set_contract_successor(env: Env, successor: Address) {
         extend_instance_ttl(&env);
         let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
 
-        let prev_successor: Address = env.storage().instance().get(&DataKey::ContractSuccessor).unwrap();
-        if successor == prev_successor {
-            panic_with_error!(&env, SinkError::InvalidAddress);
-        } else {
-            env.storage().instance().set(&DataKey::ContractSuccessor, &successor);
-            Ok(())
-        }
+        env.storage().instance().set(&DataKey::ContractSuccessor, &successor);
     }
 
     pub fn set_minimum_sink_amount(env: Env, amount: i64) -> Result<(), SinkError> {

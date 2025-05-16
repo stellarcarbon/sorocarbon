@@ -159,3 +159,46 @@ fn test_reset_admin() {
     let new_sac_admin = carbonsink_client.admin();
     assert_eq!(new_sac_admin, admin);
 }
+
+#[test]
+fn test_get_successor_not_set() {
+    let setup = set_up_contracts_and_funder(0, None);
+    let client = setup.sink_client;
+
+    let successor_when_not_set: Address = client.get_contract_successor();
+    assert_eq!(successor_when_not_set, client.address);
+}
+
+#[test]
+#[should_panic = "HostError: Error(Auth, InvalidAction)"]
+fn test_set_successor_unauthorized() {
+    let setup = set_up_contracts_and_funder(0, None);
+    let client = setup.sink_client;
+
+    // it should fail because the call lacks admin auth
+    client.set_contract_successor(&client.address);
+}
+
+#[test]
+fn test_set_and_get_successor() {
+    let setup = set_up_contracts_and_funder(0, None);
+    let client = setup.sink_client;
+    let admin = setup.carbonsink_issuer;
+
+    // set new contract successor
+    client
+        .mock_auths(&[MockAuth {
+            address: &admin,
+            invoke: &MockAuthInvoke {
+                contract: &client.address,
+                fn_name: "set_contract_successor",
+                args: (&admin,).into_val(&setup.env),
+                sub_invokes: &[],
+            },
+        }])
+        .set_contract_successor(&admin);
+
+    let successor: Address = client.get_contract_successor();
+    assert_eq!(successor, admin);
+    
+}
