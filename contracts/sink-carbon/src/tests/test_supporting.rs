@@ -184,6 +184,7 @@ fn test_set_and_get_successor() {
     let setup = set_up_contracts_and_funder(0, None);
     let client = setup.sink_client;
     let admin = setup.carbonsink_issuer;
+    let new_contract = Address::generate(&setup.env);
 
     // set new contract successor
     client
@@ -192,13 +193,13 @@ fn test_set_and_get_successor() {
             invoke: &MockAuthInvoke {
                 contract: &client.address,
                 fn_name: "set_contract_successor",
-                args: (&admin,).into_val(&setup.env),
+                args: (&new_contract,).into_val(&setup.env),
                 sub_invokes: &[],
             },
         }])
-        .set_contract_successor(&admin);
+        .set_contract_successor(&new_contract);
 
     let successor: Address = client.get_contract_successor();
-    assert_eq!(successor, admin);
+    assert_eq!(successor, new_contract);
     
 }
