@@ -13,4 +13,5 @@ pub struct SinkEvent {
     pub memo_text: String,
     pub email: String,
     pub ledger: u32,
+    pub timestamp: u64,
 }

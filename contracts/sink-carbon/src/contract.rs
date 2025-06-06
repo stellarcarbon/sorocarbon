@@ -42,6 +42,7 @@ impl SinkContract {
                 memo_text,
                 email,
                 ledger: env.ledger().sequence(),
+                timestamp: env.ledger().timestamp(),
             }
             .emit(&env);
             // and return early to spare the ZVM
