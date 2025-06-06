@@ -132,7 +132,7 @@ Upload the contract WASM bytes to the network with stellar-cli:
 stellar contract upload \
   --network testnet \
   --source <SOURCE_ACCOUNT> \
-  --wasm ~/Downloads/sink-carbon_v0.2.0.wasm
+  --wasm ~/Downloads/sink-carbon_v0.3.0.wasm
 ```
 
 The (stdout) output is the WASM hash:
@@ -152,6 +152,7 @@ mechanism that can set the CarbonSINK SAC admin, which expects the contract admi
 issuer.
 
 ```sh
+PREV_SINK=$(stellar contract alias show sink --network testnet)  # only applies for upgrades
 CARBON_ISSUER="GDT5XM5C5STQZS5R3F4CEGKJWKDVWBIWBEV4TIYV5MDVVMKA775T4OKY"
 CSINK_ISSUER="GBO66IRGFZE7UP7MAM5H5IBMZLTM64XE6YNOL4KSL2BFVH7JW6AEKZHO"
 CARBON_SAC="$(stellar contract id asset --network testnet --asset CARBON:$CARBON_ISSUER)"
@@ -179,8 +180,8 @@ The (stdout) output is the contract address of the instance you've just deployed
 🌎 Submitting deploy transaction…
 🔗 https://stellar.expert/explorer/testnet/contract/CAQWMP2EKO4SQ7VQTIYCNUXASDY7WI5EKEGJXMS7W6AICI6YXPNAB4J5
 ✅ Deployed!
-⚠️  Overwriting existing contract id: CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV
-CAQWMP2EKO4SQ7VQTIYCNUXASDY7WI5EKEGJXMS7W6AICI6YXPNAB4J5
+⚠️  Overwriting existing contract id: CAQWMP2EKO4SQ7VQTIYCNUXASDY7WI5EKEGJXMS7W6AICI6YXPNAB4J5
+CBW45IZ3W5BBDIKTIXQEAOR3TAHPCFIAVQMD4NO2YPX2FA4LKGLJLWYL
 ```
 
 Within stellar-cli, the contract is now also available under the `sink` alias.
@@ -189,6 +190,17 @@ Finally, we need to make the contract address the CarbonSINK SAC admin. Configur
 achieves that the CarbonSINK SAC can automatically authorize the SAC sub-calls within `sink_carbon`.
 
 ```sh
+# Reset CarbonSINK SAC admin to its own issuer account
+if [ -n "$PREV_SINK" ]; then
+  stellar contract invoke \
+    --network testnet \
+    --source <CSINK_ISSUER_SECRET> \
+    --id $PREV_SINK \
+    -- \
+    reset_admin
+fi
+
+# Set the new SinkContract as the CarbonSINK SAC admin
 stellar contract invoke \
   --network testnet \
   --source <CSINK_ISSUER_SECRET> \
@@ -201,7 +213,7 @@ stellar contract invoke \
 When successful, the output shows a `set_admin` event:
 
 ```text
-ℹ️  Contract alias 'sink' references CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV
+ℹ️  Contract alias 'sink' references CBW45IZ3W5BBDIKTIXQEAOR3TAHPCFIAVQMD4NO2YPX2FA4LKGLJLWYL
   on network 'Test SDF Network ; September 2015'
 ℹ️  Signing transaction: 8e110505d76c9f8456e98f255bb7cc4b09be8c1f5e9003d0b6deecd7e11d9e9c
 📅 CCUQDX22YTF72Q2F5C4HZSWVMBFTPTLIYXOC3BSNTBSZVJWKMMNUOWXH - Event:
@@ -210,7 +222,7 @@ When successful, the output shows a `set_admin` event:
     {"address":"GBO66IRGFZE7UP7MAM5H5IBMZLTM64XE6YNOL4KSL2BFVH7JW6AEKZHO"},
     {"string":"CarbonSINK:GBO66IRGFZE7UP7MAM5H5IBMZLTM64XE6YNOL4KSL2BFVH7JW6AEKZHO"}
   ] =
-    {"address":"CCAVKAYFAUAG7NROYUQGN5DGYKLAMPG4J4D7ZMBUQHLND5K6JIMEZBZV"}
+    {"address":"CBW45IZ3W5BBDIKTIXQEAOR3TAHPCFIAVQMD4NO2YPX2FA4LKGLJLWYL"}
 ```
 
 ### Mercury Retroshades
