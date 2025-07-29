@@ -19,3 +19,6 @@ mutants.out*/
 
 # secrets
 .env
+
+# komet
+**/.hypothesis
