@@ -21,4 +21,5 @@ mutants.out*/
 .env
 
 # komet
+.python-version
 **/.hypothesis

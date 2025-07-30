@@ -2,7 +2,8 @@
 
 use soroban_sdk::{
     contract, contractimpl, contracttype, 
-    Address, Bytes, BytesN, Env, IntoVal, Val, Vec
+    token::StellarAssetClient, 
+    Address, Bytes, Env, IntoVal, String, Symbol, Val, Vec
 };
 
 mod komet;
@@ -23,10 +24,10 @@ mod sink_contract {
 }
 
 #[contract]
-pub struct TestAdderContract;
+pub struct TestSinkContract;
 
 #[contractimpl]
-impl TestAdderContract {
+impl TestSinkContract {
     pub fn init(env: Env, wasm_hash: Bytes) {
         let sink_bytes = b"sink_ctr________________________";
         let sink_addr = komet::create_contract(&env, &Bytes::from_array(&env, sink_bytes), &wasm_hash);
@@ -42,30 +43,52 @@ impl TestAdderContract {
         let csink_addr = komet::address_from_bytes(&env, csink_bytes, true);
         env.storage().instance().set(&DataKey::CarbonSinkID, &csink_addr);
 
-        let salt = BytesN::from_array(&env, &[0; 32]);
+        // call the SinkContract constructor
         let constructor_args: Vec<Val> = (admin_addr, carbon_addr, csink_addr).into_val(&env);
-        let deployed_address = env
-            .deployer()
-            .with_address(env.current_contract_address(), salt)
-            .deploy_v2(
-                BytesN::<32>::from_array(&env, &wasm_hash.try_into().expect("wasm_hash must be 32 bytes")), 
-                constructor_args
-            );
+        let _: () = env.invoke_contract(&sink_addr, &Symbol::new(&env, "__constructor"), constructor_args);
     }
-
   
     pub fn test_active(env: Env) -> bool {
         let sink_addr: Address = env.storage().instance().get(&DataKey::SinkID).unwrap();
         let sink_client = sink_contract::Client::new(&env, &sink_addr);
-        // let setup = komet::set_up_contracts_and_funder(100_000_000_i128, Some(env));
-        // let client = setup.sink_client;
-        // let admin = setup.carbonsink_issuer;
-        // let carbonsink_sac = setup.carbonsink_sac;
 
-        // Call the `is_active` method of the sink contract
+        // call the `is_active` method of the sink contract
         let active = sink_client.is_active();
       
-        // Check if the constructor has been succesfully called
+        // check if the constructor has been succesfully called
         active == true
+    }
+
+    pub fn test_swap_is_atomic(
+        env: Env,
+        funder: Address, 
+        recipient: Address, 
+        amount: i64, 
+        project_id: Symbol,
+    ) -> bool {
+        // bail if `amount` is not valid for mint
+        // TODO: check on `assume` status in komet#74
+        if 1 > amount || amount > 2^60 {
+            return true;
+        }
+        // credit the funder with exactly `amount` of CARBON
+        let csink_addr = env.storage().instance().get(&DataKey::CarbonSinkID).expect(
+            "CarbonSINK address must be set."
+        );
+        let carbon_sac_client = StellarAssetClient::new(&env, &csink_addr);
+        carbon_sac_client.mint(&funder, &amount.into());
+
+        // create the SinkContract client
+        let sink_addr: Address = env.storage().instance().get(&DataKey::SinkID).unwrap();
+        let sink_client = sink_contract::Client::new(&env, &sink_addr);
+
+        // Call the `is_active` method of the sink contract
+        let empty_string = String::from_str(&env, "");
+        let sink_res = sink_client.try_sink_carbon(
+            &funder, &recipient, &amount, &project_id, &empty_string, &empty_string
+        );
+        // TODO: check for SinkError::AmountTooLow
+      
+        true
     }
 }

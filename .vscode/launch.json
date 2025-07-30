@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug komet with debugpy",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/contracts/komet-sink-carbon",
+      // TODO: PR for komet with komet.__main__
+      "module": "komet",
+      "args": "${command:pickArgs}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        // TODO: get from ~/.nix-profile/bin/komet or build soroban-semantics
+        "KDIST_DIR": "/nix/store/1afdx3dnkb3j0ln7q62hpfs3hy2i3s8p-komet-9211c581bf6e92094819a8e99b55c85e23dc7c8b"
+      }
+    }
+  ]
+}
