@@ -4,7 +4,7 @@ use soroban_sdk::{
     Address, Env, String, Symbol
 };
 
-use crate::errors::{SACError, SinkError};
+use crate::errors::{publish_invoke_error, publish_sac_error, SACError, SinkError};
 use crate::storage_types::{extend_instance_ttl, set_is_active, DataKey};
 use crate::utils::quantize_to_kg;
 
@@ -73,6 +73,7 @@ impl SinkContract {
             Ok(_) => {}
             Err(Ok(err)) => {
                 let error_code = err.get_code();
+                publish_sac_error(&env, "carbon_sac_error", error_code);
                 if error_code == SACError::BalanceError as u32 {
                     // most likely the funder's CARBON balance is too low
                     return Err(SinkError::InsufficientBalance);
@@ -83,6 +84,7 @@ impl SinkContract {
                 panic_with_error!(&env, err);
             },
             Err(Err(invoke_err)) => {
+                publish_invoke_error(&env, "burn_carbon", invoke_err);
                 panic!("InvokeError: {:?}", invoke_err);
             }
         }
@@ -93,25 +95,31 @@ impl SinkContract {
         match carbonsink_client.try_set_authorized(&recipient, &true) {
             Ok(_) => {}
             Err(Ok(err)) => {
-                if err.get_code() == SACError::TrustlineMissingError as u32 {
+                let error_code = err.get_code();
+                publish_sac_error(&env, "csink_sac_error", error_code);
+                if error_code == SACError::TrustlineMissingError as u32 {
                     // `set_authorization` reads the trustline entry, not the account entry
                     return Err(SinkError::AccountOrTrustlineMissing);
                 } // re-panic for unexpected errors
                 panic_with_error!(&env, err);
             },
             Err(Err(invoke_err)) => {
+                publish_invoke_error(&env, "set_authorized", invoke_err);
                 panic!("InvokeError: {:?}", invoke_err);
             }
         };
         match carbonsink_client.try_mint(&recipient, &amount.into()) {
             Ok(_) => {}
             Err(Ok(err)) => {
-                if err.get_code() == SACError::BalanceError as u32 {
+                let error_code = err.get_code();
+                publish_sac_error(&env, "csink_sac_error", error_code);
+                if error_code == SACError::BalanceError as u32 {
                     return Err(SinkError::TrustlineLimitReached);
                 } // re-panic for unexpected errors
                 panic_with_error!(&env, err);
             },
             Err(Err(invoke_err)) => {
+                publish_invoke_error(&env, "mint_csink", invoke_err);
                 panic!("InvokeError: {:?}", invoke_err);
             }
         }

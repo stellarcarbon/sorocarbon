@@ -1,4 +1,4 @@
-use soroban_sdk::contracterror;
+use soroban_sdk::{contracterror, Env, InvokeError};
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -29,4 +29,28 @@ pub enum SACError {
     BalanceDeauthorizedError = 11,
     OverflowError = 12,
     TrustlineMissingError = 13,
+}
+
+pub fn publish_sac_error(env: &Env, sub_topic: &str, error_code: u32) {
+    env.events().publish(
+        ("sink_carbon", sub_topic),
+        error_code
+    );
+}
+
+pub fn publish_invoke_error(env: &Env, sub_topic: &str, invoke_err: InvokeError) {
+    match invoke_err {
+        InvokeError::Abort => {
+            env.events().publish(
+                ("sink_carbon", "invoke_error", sub_topic),
+                "panic_or_host_error"
+            );
+        }
+        InvokeError::Contract(code) => {
+            env.events().publish(
+                ("sink_carbon", "invoke_error", sub_topic),
+                ("contract_error", code)
+            );
+        }
+    }
 }
