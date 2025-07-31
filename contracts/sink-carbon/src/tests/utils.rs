@@ -6,10 +6,11 @@ use soroban_sdk::xdr;
 use soroban_sdk::{
     testutils::{MockAuth, MockAuthInvoke, StellarAssetIssuer}, 
     xdr::{Asset, Limits, ScAddress, WriteXdr}, 
-    vec, Address, Env, FromVal, IntoVal, String, Symbol
+    vec, Address, Env, FromVal, IntoVal, String, Symbol,
 };
 use stellar_strkey;
 
+use crate::utils::quantize_to_kg;
 use crate::{errors::SinkError, tests::fixtures::Setup};
 
 #[derive(Clone)]
@@ -35,6 +36,8 @@ pub fn sink_carbon_with_auth(setup: &Setup, test_data: &SinkTestData) -> Result<
     let project_id = Symbol::new(env, test_data.project_id);
     let memo_text = String::from_str(env, test_data.memo_text);
     let email = String::from_str(env, test_data.email);
+    // we need to authorize the quantized amount for the burn call
+    let quantized_amount = (quantize_to_kg(amount) as i128).into_val(env);
     match client
         .mock_auths(&[MockAuth {
             address: funder,
@@ -48,7 +51,7 @@ pub fn sink_carbon_with_auth(setup: &Setup, test_data: &SinkTestData) -> Result<
                 sub_invokes: &[MockAuthInvoke {
                     contract: &carbon_sac.address(),
                     fn_name: "burn",
-                    args: vec![env, funder.clone().into_val(env), (amount as i128).into_val(env)],
+                    args: vec![env, funder.clone().into_val(env), quantized_amount],
                     sub_invokes: &[],
                 }],
             },
@@ -56,11 +59,11 @@ pub fn sink_carbon_with_auth(setup: &Setup, test_data: &SinkTestData) -> Result<
         .try_sink_carbon(
             &funder, &recipient, &amount, &project_id, &memo_text, &email
         ) {
-        Ok(Ok(())) => Ok(()),
-        Err(Ok(sink_err)) => Err(sink_err),
-        Ok(Err(conversion_err)) => panic!("ConversionError: {:?}", conversion_err),
-        Err(Err(invoke_err)) => panic!("InvokeError: {:?}", invoke_err),
-    }
+            Ok(Ok(())) => Ok(()),
+            Err(Ok(sink_err)) => Err(sink_err),
+            Ok(Err(conversion_err)) => panic!("ConversionError: {:?}", conversion_err),
+            Err(Err(invoke_err)) => panic!("InvokeError: {:?}", invoke_err),
+        }
 }
 
 pub fn deploy_native_sac(env: &Env) -> Address {
@@ -70,6 +73,11 @@ pub fn deploy_native_sac(env: &Env) -> Address {
     let bytes_obj = host.bytes_new_from_slice(asset_slice).unwrap();
     let sac_res = host.create_asset_contract(bytes_obj);
     Address::from_val(env, &sac_res.unwrap())
+}
+
+pub fn bytes_to_contract(env: &Env, bytes: &[u8; 32]) -> Address {
+    let contract_id = stellar_strkey::Contract(*bytes).to_string();
+    Address::from_str(env, &contract_id)
 }
 
 pub fn create_account_entry(env: &Env, pubkey: &str) {

@@ -19,6 +19,10 @@ pub struct Setup<'a> {
 pub fn set_up_contracts_and_funder<'a>(funder_balance: i128, env_opt: Option<Env>) -> Setup<'a> {
     let env = env_opt.unwrap_or_default();
     let funder = Address::generate(&env);
+    set_up_contracts_and_funder_inner(funder, funder_balance, env)
+}
+
+pub fn set_up_contracts_and_funder_inner<'a>(funder: Address, funder_balance: i128, env: Env) -> Setup<'a> {
     let carbon_issuer = Address::generate(&env);  // this is a C-address
     let carbonsink_issuer = Address::generate(&env);  // this is a C-address
     let carbon_sac = env.register_stellar_asset_contract_v2(carbon_issuer.clone());
