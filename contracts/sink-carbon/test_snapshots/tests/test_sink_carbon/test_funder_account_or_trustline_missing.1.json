@@ -878,5 +878,29 @@
       ]
     ]
   },
-  "events": []
+  "events": [
+    {
+      "event": {
+        "ext": "v0",
+        "contract_id": "0000000000000000000000000000000000000000000000000000000000000006",
+        "type_": "contract",
+        "body": {
+          "v0": {
+            "topics": [
+              {
+                "string": "sink_carbon"
+              },
+              {
+                "string": "carbon_sac_error"
+              }
+            ],
+            "data": {
+              "u32": 13
+            }
+          }
+        }
+      },
+      "failed_call": true
+    }
+  ]
 }

@@ -1,11 +1,12 @@
-use soroban_sdk::{token, Address, String, Symbol};
-use soroban_sdk::testutils::Address as _;
+use soroban_sdk::{token, Address, Env, String, Symbol};
+use soroban_sdk::testutils::{Address as _};
 use soroban_sdk::token::TokenClient;
 
 use crate::errors::{SACError, SinkError};
-use crate::tests::fixtures::set_up_contracts_and_funder;
+use crate::tests::fixtures::{set_up_contracts_and_funder, set_up_contracts_and_funder_inner};
 use crate::tests::utils::{
-    SinkTestData, create_account_entry, create_trustline, deploy_native_sac, sink_carbon_with_auth
+    bytes_to_contract, create_account_entry, create_trustline, deploy_native_sac, sink_carbon_with_auth,
+    SinkTestData,
 };
 use crate::utils::quantize_to_kg;
 
@@ -116,6 +117,97 @@ fn test_sink_amount_too_low() {
     let carbonsink_client = TokenClient::new(&setup.env, &setup.carbonsink_sac.address());
     assert_eq!(carbon_client.balance(&setup.funder), 10_000_000);
     assert_eq!(carbonsink_client.balance(&setup.funder), 0);
+}
+
+#[test]
+fn test_sink_carbon_max_i64() {
+    let amount = i64::MAX;
+    let setup = set_up_contracts_and_funder(amount.into(), None);
+
+    // have the funder sink the maximum supply of CARBON
+    let test_data = SinkTestData { 
+        funder: &setup.funder,
+        recipient: &setup.funder,
+        amount: amount,
+        project_id: "max_impact",
+        memo_text: "tons of impact",
+        email: ""
+    };
+
+    assert!(sink_carbon_with_auth(&setup, &test_data).is_ok());
+
+    // assert the effect on balances, expect a difference caused by quantization
+    let carbon_client = TokenClient::new(&setup.env, &setup.carbon_sac.address());
+    let carbonsink_client = TokenClient::new(&setup.env, &setup.carbonsink_sac.address());
+    assert!(carbon_client.balance(&setup.funder) < 10_000);
+    assert!(amount as i128 - carbonsink_client.balance(&setup.funder) < 10_000);
+}
+
+#[test]
+fn test_sink_carbon_debug_komet() {
+    // debug a komet fuzzing failure
+    let env = Env::default();
+    let funder = bytes_to_contract(
+        &env, 
+        b"-\xc2A]u\x8b\xd8>\x99\x7f0\xb4\"(7\x8c\x13\xee@\xf5d\x1c\xe3\xab\xdd&\x8d\xfe\x86\xa9\xb9\xb3"
+    );
+    let recipient = bytes_to_contract(
+        &env, 
+        b"\xf6\xfd\xfa0Y\xfeD\x1c\xbeb\xb1lF\xf2\ri\xe6n\xfd\xeb\xf7`\xf4#\xd23C\xec\x0e\x96\xe9\x85"
+    );
+    let amount = 8623082768693042131;
+    let setup = set_up_contracts_and_funder_inner(funder, amount.into(), env);
+    let carbon_token_client = TokenClient::new(&setup.env, &setup.carbon_sac.address());
+    let csink_token_client = TokenClient::new(&setup.env, &setup.carbonsink_sac.address());
+
+    let test_data = SinkTestData { 
+        funder: &setup.funder,
+        recipient: &recipient,
+        amount: amount,
+        project_id: "",
+        memo_text: "",
+        email: ""
+    };
+    // collect balances before the swap
+    let contract_carbon_before = carbon_token_client.balance(&setup.contract_id);
+    let contract_csink_before = csink_token_client.balance(&setup.contract_id);
+    let funder_carbon_before = carbon_token_client.balance(&setup.funder);
+    let funder_csink_before = csink_token_client.balance(&setup.funder);
+    let recipient_carbon_before = carbon_token_client.balance(&recipient);
+    let recipient_csink_before = csink_token_client.balance(&recipient);
+
+    // sink all whole kilograms of CARBON
+    assert!(sink_carbon_with_auth(&setup, &test_data).is_ok());
+
+    // collect balances after the swap
+    let contract_carbon_after = carbon_token_client.balance(&setup.contract_id);
+    let contract_csink_after = csink_token_client.balance(&setup.contract_id);
+    let funder_carbon_after = carbon_token_client.balance(&setup.funder);
+    let funder_csink_after = csink_token_client.balance(&setup.funder);
+    let recipient_carbon_after = carbon_token_client.balance(&recipient);
+    let recipient_csink_after = csink_token_client.balance(&recipient);
+
+    // assert all contract balances are empty
+    assert_eq!(contract_carbon_before, 0);
+    assert_eq!(contract_csink_before, 0);
+    assert_eq!(contract_carbon_after, 0);
+    assert_eq!(contract_csink_after, 0);
+
+    // assert the effect on funder balances
+    assert_eq!(funder_carbon_before, amount as i128);
+    assert!(funder_carbon_after < 10_000);
+    assert_eq!(funder_csink_before, 0);
+    assert_eq!(funder_csink_after, 0);
+
+    // assert the effect on recipient balances
+    assert_eq!(recipient_carbon_before, 0);
+    assert_eq!(recipient_carbon_after, 0);
+    assert_eq!(recipient_csink_before, 0);
+    let quantization_remainder = amount as i128 - recipient_csink_after;
+    assert!(quantization_remainder < 10_000);
+
+    // assert quantization remainders are equal
+    assert_eq!(funder_carbon_after, quantization_remainder)
 }
 
 #[test]
