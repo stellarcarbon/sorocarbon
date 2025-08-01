@@ -19,7 +19,6 @@
       "type": "debugpy",
       "request": "launch",
       "cwd": "${workspaceFolder}/contracts/komet-sink-carbon",
-      // TODO: PR for komet with komet.__main__
       "module": "komet",
       "args": "${command:pickArgs}",
       "console": "integratedTerminal",

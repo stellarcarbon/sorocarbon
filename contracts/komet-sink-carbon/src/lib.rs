@@ -65,7 +65,6 @@ impl TestSinkContract {
         recipient: Address, 
         amount: i64, 
         project_id: Symbol,
-        // TODO: String param, check blanket try...except
     ) -> bool {
         // bail if `amount` is not valid for mint
         // TODO: check on `assume` status in komet#74
