@@ -18,6 +18,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Rustup
       run: rustup update
+    - name: Install Stellar CLI
+      uses: stellar/stellar-cli@v23.0.0
     - name: Cache
       uses: actions/cache@v4
       with:
