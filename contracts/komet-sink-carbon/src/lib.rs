@@ -101,9 +101,9 @@ impl TestSinkContract {
         let recipient_csink_before = csink_token_client.balance(&recipient);
 
         // Call the `sink_carbon` method of the sink contract
-        let empty_string = String::from_str(&env, "");
+        let memo_text = String::from_str(&env, "");
         let sink_res = sink_client.try_sink_carbon(
-            &funder, &recipient, &amount, &project_id, &empty_string, &empty_string
+            &funder, &recipient, &amount, &project_id, &memo_text
         );
         // TODO: check for SinkError::AmountTooLow
 

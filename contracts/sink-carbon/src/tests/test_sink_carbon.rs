@@ -32,7 +32,6 @@ fn test_sink_carbon_happy() {
         amount: 1_000_000_i64,
         project_id: "VCS1360",
         memo_text: "100 kg 🌳🌴",
-        email: ""
     };
     assert!(sink_carbon_with_auth(&setup, &test_data).is_ok());
 
@@ -54,7 +53,6 @@ fn test_sink_carbon_twice() {
         amount: 3_000_000_i64,
         project_id: "VCS1360",
         memo_text: "300 kg 🌳🌴",
-        email: ""
     };
     assert!(sink_carbon_with_auth(&setup, &test_data_a).is_ok());
 
@@ -82,7 +80,6 @@ fn test_sink_carbon_separate_recipient() {
         amount: 3_330_000_i64,
         project_id: "OFP1234567890",
         memo_text: "333 kg 🍄‍🟫🍄🍄‍🟫",
-        email: ""
     };
     assert!(sink_carbon_with_auth(&setup, &test_data).is_ok());
 
@@ -106,7 +103,6 @@ fn test_sink_amount_too_low() {
         amount: 990_000_i64,
         project_id: "SOMEPROJECT",
         memo_text: "99 kg 🌳🌴",
-        email: ""
     };
     // it should fail because the amount is lower than the minimum
     let sink_res = sink_carbon_with_auth(&setup, &test_data);
@@ -131,7 +127,6 @@ fn test_sink_carbon_max_i64() {
         amount: amount,
         project_id: "max_impact",
         memo_text: "tons of impact",
-        email: ""
     };
 
     assert!(sink_carbon_with_auth(&setup, &test_data).is_ok());
@@ -166,7 +161,6 @@ fn test_sink_carbon_debug_komet() {
         amount: amount,
         project_id: "",
         memo_text: "",
-        email: ""
     };
     // collect balances before the swap
     let contract_carbon_before = carbon_token_client.balance(&setup.contract_id);
@@ -223,7 +217,6 @@ fn test_sink_contract_inactive() {
         amount: 10_000_000_i64,
         project_id: "SOMEPROJECT",
         memo_text: "A TON",
-        email: ""
     };
     // it should fail because the contract is not active
     sink_carbon_with_auth(&setup, &test_data).unwrap();
@@ -240,7 +233,6 @@ fn test_funder_balance_too_low() {
         amount: 1_000_000_i64,
         project_id: "VCS1360",
         memo_text: "100 kg 🌳🌴",
-        email: ""
     };
     // it should fail because the funder has an insufficient balance
     let sink_res = sink_carbon_with_auth(&setup, &test_data);
@@ -260,7 +252,6 @@ fn test_funder_account_or_trustline_missing() {
     let amount = 1_000_000_i64;
     let project_id = Symbol::new(env, "VCS1360");
     let memo_text = String::from_str(env, "100 kg 🌳🌴");
-    let email = String::from_str(env, "");
 
     // check native balance, should fail
     let xlm_balance_res = native_client.try_balance(&funder);
@@ -268,7 +259,7 @@ fn test_funder_account_or_trustline_missing() {
     // attempt to sink with non-existing account
     let sink_res = client
         .mock_all_auths()
-        .try_sink_carbon(&funder, &funder, &amount, &project_id, &memo_text, &email);
+        .try_sink_carbon(&funder, &funder, &amount, &project_id, &memo_text);
     // it should fail because the funder account wasn't created
     assert_eq!(sink_res.unwrap_err().unwrap(), SinkError::AccountOrTrustlineMissing);
 
@@ -280,7 +271,7 @@ fn test_funder_account_or_trustline_missing() {
     // attempt to sink with non-existing trustline
     let sink_res = client
         .mock_all_auths()
-        .try_sink_carbon(&funder, &funder, &amount, &project_id, &memo_text, &email);
+        .try_sink_carbon(&funder, &funder, &amount, &project_id, &memo_text);
     // it should fail because the trustline was never set up
     assert_eq!(sink_res.unwrap_err().unwrap(), SinkError::AccountOrTrustlineMissing);
 }
@@ -302,7 +293,6 @@ fn test_recipient_account_or_trustline_issues() {
         amount: 1_000_000_i64,
         project_id: "VCS1360",
         memo_text: "100 kg 🌳🌴",
-        email: ""
     };
 
     // check native balance, should fail

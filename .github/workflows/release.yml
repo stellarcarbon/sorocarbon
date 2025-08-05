@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: rustup update
-    - run: cargo test
+    - run: make -C contracts/sink-carbon/ test
 
   release-sink-carbon:
     uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@fbd0e2c5bbcbcd22439c06b5f1da47e2b27672d4

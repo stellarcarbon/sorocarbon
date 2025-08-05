@@ -27,5 +27,5 @@ jobs:
           target
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-    - name: Run tests
-      run: cargo test
+    - name: Run sink-carbon tests
+      run: make -C contracts/sink-carbon/ test

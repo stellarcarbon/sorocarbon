@@ -20,7 +20,6 @@ pub struct SinkTestData<'a> {
     pub amount: i64, 
     pub project_id: &'static str,
     pub memo_text: &'static str,
-    pub email: &'static str,
 }
 
 pub fn sink_carbon_with_auth(setup: &Setup, test_data: &SinkTestData) -> Result<(), SinkError> {
@@ -35,7 +34,6 @@ pub fn sink_carbon_with_auth(setup: &Setup, test_data: &SinkTestData) -> Result<
     let amount = test_data.amount;
     let project_id = Symbol::new(env, test_data.project_id);
     let memo_text = String::from_str(env, test_data.memo_text);
-    let email = String::from_str(env, test_data.email);
     // we need to authorize the quantized amount for the burn call
     let quantized_amount = (quantize_to_kg(amount) as i128).into_val(env);
     match client
@@ -46,7 +44,7 @@ pub fn sink_carbon_with_auth(setup: &Setup, test_data: &SinkTestData) -> Result<
                 fn_name: "sink_carbon",
                 args: (
                     funder.clone(), recipient.clone(), amount, 
-                    project_id.clone(), memo_text.clone(), email.clone()
+                    project_id.clone(), memo_text.clone()
                 ).into_val(env),
                 sub_invokes: &[MockAuthInvoke {
                     contract: &carbon_sac.address(),
@@ -57,7 +55,7 @@ pub fn sink_carbon_with_auth(setup: &Setup, test_data: &SinkTestData) -> Result<
             },
         }])
         .try_sink_carbon(
-            &funder, &recipient, &amount, &project_id, &memo_text, &email
+            &funder, &recipient, &amount, &project_id, &memo_text,
         ) {
             Ok(Ok(())) => Ok(()),
             Err(Ok(sink_err)) => Err(sink_err),

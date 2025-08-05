@@ -29,7 +29,6 @@ impl SinkContract {
         amount: i64, 
         project_id: Symbol,
         memo_text: String,
-        email: String,
     ) -> Result<(), SinkError> {
         #[cfg(feature = "mercury")]
         {
@@ -40,7 +39,6 @@ impl SinkContract {
                 amount,
                 project_id,
                 memo_text,
-                email,
                 ledger: env.ledger().sequence(),
                 timestamp: env.ledger().timestamp(),
             }
@@ -49,7 +47,7 @@ impl SinkContract {
             return Ok(());
         }
         #[allow(unused)]
-        let (project_id, memo_text, email) = (project_id, memo_text, email);
+        let (project_id, memo_text) = (project_id, memo_text);
 
         extend_instance_ttl(&env);
         if !Self::is_active(env.clone()) {

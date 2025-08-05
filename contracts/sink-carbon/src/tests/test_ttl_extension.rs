@@ -31,7 +31,6 @@ fn test_extend_ttl_sink_carbon() {
         amount: 1_000_000_i64,
         project_id: "VCS1360",
         memo_text: "100 kg 🌳🌴",
-        email: ""
     };
     assert!(sink_carbon_with_auth(&setup, &test_data).is_ok());
 
