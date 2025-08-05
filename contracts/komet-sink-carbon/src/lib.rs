@@ -29,17 +29,20 @@ pub struct TestSinkContract;
 #[contractimpl]
 impl TestSinkContract {
     pub fn init(env: Env, wasm_hash: Bytes) {
-        let sink_bytes = b"sink_ctr________________________";
+        let sink_bytes = b"sink_contract___________________";
         let sink_addr = komet::create_contract(&env, &Bytes::from_array(&env, sink_bytes), &wasm_hash);
         env.storage().instance().set(&DataKey::SinkID, &sink_addr);
 
-        let admin_bytes = b"GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJXFF";
+        // TODO: set up SACs for CARBON and CarbonSINK from a WASM implementation
+        // this version of the SAC has yet to be created, see komet#90
+
+        let admin_bytes = b"admin_address___________________";
         let admin_addr = komet::address_from_bytes(&env, admin_bytes, false);
         env.storage().instance().set(&DataKey::Admin, &admin_addr);
-        let carbon_bytes = b"CCABDO7UZXYE4W6GVSEGSNNZTKSLFQGKXXQTH6OX7M7GKZ4Z6CUJNGZN";
+        let carbon_bytes = b"carbon_sac______________________";
         let carbon_addr = komet::address_from_bytes(&env, carbon_bytes, true);
         env.storage().instance().set(&DataKey::CarbonID, &carbon_addr);
-        let csink_bytes = b"CDLDVFKHEZ2RVB3NG4UQA4VPD3TSHV6XMHXMHP2BSGCJ2IIWVTOHGDSG";
+        let csink_bytes = b"csink_sac_______________________";
         let csink_addr = komet::address_from_bytes(&env, csink_bytes, true);
         env.storage().instance().set(&DataKey::CarbonSinkID, &csink_addr);
 
