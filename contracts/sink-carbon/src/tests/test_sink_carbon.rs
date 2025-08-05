@@ -1,5 +1,5 @@
-use soroban_sdk::{token, Address, Env, String, Symbol};
-use soroban_sdk::testutils::{Address as _};
+use soroban_sdk::{token, vec, Address, Env, IntoVal, String, Symbol};
+use soroban_sdk::testutils::{Address as _, Events};
 use soroban_sdk::token::TokenClient;
 
 use crate::errors::{SACError, SinkError};
@@ -237,6 +237,22 @@ fn test_funder_balance_too_low() {
     // it should fail because the funder has an insufficient balance
     let sink_res = sink_carbon_with_auth(&setup, &test_data);
     assert_eq!(sink_res.unwrap_err(), SinkError::InsufficientBalance);
+
+    // there should be a carbon_sac_error event
+    let env = &setup.env;
+    let captured_events = env.events().all();
+    let expected_event = (
+        setup.contract_id,
+        (
+            String::from_str(env, "sink_carbon"),
+            String::from_str(env, "carbon_sac_error")
+        ).into_val(env),
+        (SACError::BalanceError as u32).into_val(env)
+    );
+    assert_eq!(
+        captured_events,
+        vec![env, expected_event]
+    );
 }
 
 #[test]
@@ -274,6 +290,21 @@ fn test_funder_account_or_trustline_missing() {
         .try_sink_carbon(&funder, &funder, &amount, &project_id, &memo_text);
     // it should fail because the trustline was never set up
     assert_eq!(sink_res.unwrap_err().unwrap(), SinkError::AccountOrTrustlineMissing);
+
+    // there should be a carbon_sac_error event
+    let captured_events = env.events().all();
+    let expected_event = (
+        setup.contract_id,
+        (
+            String::from_str(env, "sink_carbon"),
+            String::from_str(env, "carbon_sac_error")
+        ).into_val(env),
+        (SACError::TrustlineMissingError as u32).into_val(env)
+    );
+    assert_eq!(
+        captured_events,
+        vec![env, expected_event]
+    );
 }
 
 #[test]
