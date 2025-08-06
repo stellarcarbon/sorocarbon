@@ -19,7 +19,7 @@ pub enum DataKey {
 
 mod sink_contract {
     soroban_sdk::contractimport!(
-        file = "../../target/wasm32-unknown-unknown/release/sink_carbon.wasm"
+        file = "../../target/wasm32v1-none/release/sink_carbon.wasm"
     );
 }
 

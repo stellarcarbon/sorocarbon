@@ -9,10 +9,10 @@ echo "Script running in directory: $(pwd)"
 source ".env"
 
 echo "Building Mercury-enabled contract..."
-cargo build --release --target wasm32-unknown-unknown --features mercury || exit 1
+cargo build --release --target wasm32v1-none --features mercury || exit 1
 printf "\nYou'll see a warning about unreachable code in the build output. This can probably be ignored.\n"
 
-wasm_bin="target/wasm32-unknown-unknown/release/sink_carbon.wasm"
+wasm_bin="target/wasm32v1-none/release/sink_carbon.wasm"
 
 mercury_args=(
     --key $MERCURY_KEY
