@@ -24,7 +24,7 @@ jobs:
       release_name: ${{ github.ref_name }}          # use git tag as unique release name
       release_description: "Unaudited SinkContract ${{ github.ref_name }}"
       home_domain: 'stellarcarbon.io'               # home domain for the contract
-      relative_path: 'src/sink-carbon'              # relative path to the contract
+      relative_path: 'contracts/sink-carbon'        # relative path to the contract
       package: 'sink-carbon'                        # package name to build
     secrets:
       release_token: ${{ secrets.GITHUB_TOKEN }}
