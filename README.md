@@ -132,7 +132,7 @@ Upload the contract WASM bytes to the network with stellar-cli:
 stellar contract upload \
   --network testnet \
   --source <SOURCE_ACCOUNT> \
-  --wasm ~/Downloads/sink-carbon_v0.3.0.wasm
+  --wasm ~/Downloads/sink-carbon_v0.4.0.wasm
 ```
 
 The (stdout) output is the WASM hash:
@@ -141,7 +141,7 @@ The (stdout) output is the WASM hash:
 ℹ️  Simulating install transaction…
 ℹ️  Signing transaction: d8de6f2a24633ab73d0d37bcc0c4a4c75d5dbbd281d837ec82daad49771b6cec
 🌎 Submitting install transaction…
-e3228c821ab8ca8c63bce736fe767f1b3c3297578e626b1decfd19225b0b1198
+0f82a7cacf4085a42905b9a54767ecc06d1132ee03ffef7018fbfb15f32be217
 ```
 
 ### Deploy
@@ -172,16 +172,17 @@ stellar contract deploy \
 The (stdout) output is the contract address of the instance you've just deployed:
 
 ```text
-ℹ️  Using wasm hash e3228c821ab8ca8c63bce736fe767f1b3c3297578e626b1decfd19225b0b1198
-ℹ️  Simulating deploy transaction…
-ℹ️  Transaction hash is 47cc19ad6219610cc32f9285641e332079d4dc41b994b4878c0ce3c97a734199
-🔗 https://stellar.expert/explorer/testnet/tx/47cc19ad6219610cc32f9285641e332079d4dc41b994b4878c0ce3c97a734199
-ℹ️  Signing transaction: 47cc19ad6219610cc32f9285641e332079d4dc41b994b4878c0ce3c97a734199
+ℹ️ Contract alias 'sink' references CAVS7HEUNFCMOW6DC7EBY7J6HNFJ5JJ7LV4H7RPUC6V5QO5OMS7AQLD5 on network 'Test SDF Network ; September 2015'
+ℹ️ Using wasm hash 0f82a7cacf4085a42905b9a54767ecc06d1132ee03ffef7018fbfb15f32be217
+ℹ️ Simulating deploy transaction…
+ℹ️ Transaction hash is 824b0ec0402b31ae5d1ca3db4cbff72ac098f6036a6e0af6df436995fc771c11
+🔗 https://stellar.expert/explorer/testnet/tx/824b0ec0402b31ae5d1ca3db4cbff72ac098f6036a6e0af6df436995fc771c11
+ℹ️ Signing transaction: 824b0ec0402b31ae5d1ca3db4cbff72ac098f6036a6e0af6df436995fc771c11
 🌎 Submitting deploy transaction…
-🔗 https://stellar.expert/explorer/testnet/contract/CAQWMP2EKO4SQ7VQTIYCNUXASDY7WI5EKEGJXMS7W6AICI6YXPNAB4J5
+🔗 https://stellar.expert/explorer/testnet/contract/CBDWJLGQPU3DOYCMVPYF56QFC7ISSC633QSJUSBJIXM6RJBTGDZVA27P
 ✅ Deployed!
-⚠️  Overwriting existing contract id: CAQWMP2EKO4SQ7VQTIYCNUXASDY7WI5EKEGJXMS7W6AICI6YXPNAB4J5
-CBW45IZ3W5BBDIKTIXQEAOR3TAHPCFIAVQMD4NO2YPX2FA4LKGLJLWYL
+⚠️ Overwriting existing alias "sink" that currently links to contract ID: CAVS7HEUNFCMOW6DC7EBY7J6HNFJ5JJ7LV4H7RPUC6V5QO5OMS7AQLD5
+CBDWJLGQPU3DOYCMVPYF56QFC7ISSC633QSJUSBJIXM6RJBTGDZVA27P
 ```
 
 Within stellar-cli, the contract is now also available under the `sink` alias.
@@ -213,16 +214,30 @@ stellar contract invoke \
 When successful, the output shows a `set_admin` event:
 
 ```text
-ℹ️  Contract alias 'sink' references CBW45IZ3W5BBDIKTIXQEAOR3TAHPCFIAVQMD4NO2YPX2FA4LKGLJLWYL
-  on network 'Test SDF Network ; September 2015'
-ℹ️  Signing transaction: 8e110505d76c9f8456e98f255bb7cc4b09be8c1f5e9003d0b6deecd7e11d9e9c
+Contract alias 'sink' references CBDWJLGQPU3DOYCMVPYF56QFC7ISSC633QSJUSBJIXM6RJBTGDZVA27P
+ on network 'Test SDF Network ; September 2015'
+ℹ️ Signing transaction: d4a213b34b787da798c508a5f149b812bd8b04a09011fc4701698bb8cb4933a7
+
 📅 CCUQDX22YTF72Q2F5C4HZSWVMBFTPTLIYXOC3BSNTBSZVJWKMMNUOWXH - Event:
   [
     {"symbol":"set_admin"},
     {"address":"GBO66IRGFZE7UP7MAM5H5IBMZLTM64XE6YNOL4KSL2BFVH7JW6AEKZHO"},
     {"string":"CarbonSINK:GBO66IRGFZE7UP7MAM5H5IBMZLTM64XE6YNOL4KSL2BFVH7JW6AEKZHO"}
   ] =
-    {"address":"CBW45IZ3W5BBDIKTIXQEAOR3TAHPCFIAVQMD4NO2YPX2FA4LKGLJLWYL"}
+    {"address":"CBDWJLGQPU3DOYCMVPYF56QFC7ISSC633QSJUSBJIXM6RJBTGDZVA27P"}
+```
+
+If the new contract replaces a previously deployed contract, set its successor
+to complete the upgrade process:
+
+```sh
+stellar contract invoke \
+  --network testnet \
+  --source <CSINK_ISSUER_SECRET> \
+  --id $PREV_SINK \
+  -- \
+  set_contract_successor
+  --successor $(stellar contract alias show sink --network testnet)
 ```
 
 ### Mercury Retroshades
