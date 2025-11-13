@@ -1123,7 +1123,7 @@ dependencies = [
 
 [[package]]
 name = "sink-carbon"
-version = "0.4.1"
+version = "0.4.4"
 dependencies = [
  "retroshade-sdk",
  "soroban-env-host",
