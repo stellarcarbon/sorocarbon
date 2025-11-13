@@ -36,6 +36,29 @@ impl SinkContract {
     /// Quantizes the amount to kg resolution, checks minimum requirements, and handles authorization for CarbonSINK minting.
     /// Emits an event if the Mercury feature is enabled, otherwise performs the full sink operation.
     /// 
+    /// ## Arguments
+    /// 
+    /// * `env` - The Soroban environment.
+    /// * `funder` - The address funding the sink operation (spends CARBON).
+    /// * `recipient` - The address receiving the CarbonSINK tokens.
+    /// * `amount` - The amount of CARBON to sink in decigrams.
+    /// * `project_id` - The impact project ID (e.g. VCS1360).
+    /// * `memo_text` - A retirement reason or transaction reference.
+    /// 
+    /// ## Returns
+    /// 
+    /// A Result indicating success (unit type) or a `SinkError`.
+    /// 
+    /// ## Errors
+    /// 
+    /// * `AmountTooLow` - The quantized amount is below the minimum sink amount.
+    /// * `InsufficientBalance` - The funder's CARBON balance is insufficient.
+    /// * `AccountOrTrustlineMissing` - The funder or recipient has a missing trustline or account.
+    /// * `TrustlineLimitReached` - The recipient's trustline limit is reached for CarbonSINK.
+    /// * `ContractDeactivated` - The contract is not currently active, preventing this operation.
+    /// 
+    /// ## Notes    
+    ///  
     /// The function has five balance properties:
     /// 
     /// 1. Total CARBON supply decreases by `amount` (via burn).
@@ -55,27 +78,6 @@ impl SinkContract {
     /// 
     /// Common pitfalls: Ensure the funder has enough CARBON and the recipient has a valid trustline; otherwise,
     /// the operation will fail with errors like `InsufficientBalance` or `TrustlineLimitReached`.
-    /// 
-    /// ## Arguments
-    /// 
-    /// * `env` - The Soroban environment.
-    /// * `funder` - The address funding the sink operation (spends CARBON).
-    /// * `recipient` - The address receiving the CarbonSINK tokens.
-    /// * `amount` - The amount of CARBON to sink in decigrams.
-    /// * `project_id` - The impact project ID (e.g. VCS1360).
-    /// * `memo_text` - A retirement reason or transaction reference.
-    /// 
-    /// ## Returns
-    /// 
-    /// A Result indicating success (unit type) or a `SinkError`.
-    /// 
-    /// ## Errors
-    /// 
-    /// * `ContractDeactivated` - The contract is not currently active, preventing this operation.
-    /// * `AmountTooLow` - The quantized amount is below the minimum sink amount.
-    /// * `InsufficientBalance` - The funder's CARBON balance is insufficient.
-    /// * `AccountOrTrustlineMissing` - The funder or recipient has a missing trustline or account.
-    /// * `TrustlineLimitReached` - The recipient's trustline limit is reached for CarbonSINK.
     pub fn sink_carbon(
         env: Env, 
         funder: Address, 
