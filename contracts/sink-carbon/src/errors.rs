@@ -4,11 +4,17 @@ use soroban_sdk::{contracterror, Env, InvokeError};
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
 pub enum SinkError {
+    /// The contract is deactivated and cannot perform sink operations.
     ContractDeactivated = 1066,
+    /// The sink amount is below the minimum required amount.
     AmountTooLow = 1067,
+    /// A negative amount was provided, which is invalid.
     NegativeAmount = 1068,
+    /// The funder's balance is insufficient for the operation.
     InsufficientBalance = 1069,
+    /// An account or trustline ledger entry is missing for the operation.
     AccountOrTrustlineMissing = 1070,
+    /// The trustline limit has been reached for the recipient.
     TrustlineLimitReached = 1071,
 }
 
