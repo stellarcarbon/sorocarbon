@@ -14,11 +14,11 @@ pub struct SinkContract;
 
 #[contractimpl]
 impl SinkContract {
-    /// Initializes the SinkContract with the admin, carbon asset ID, and carbonsink asset ID.
+    /// Initializes the SinkContract with the admin, CARBON asset ID, and CarbonSINK asset ID.
     /// Sets up initial storage values including admin, asset IDs, active status, and minimum sink amount.
     /// This constructor must be called once during contract deployment.
     /// 
-    /// # Arguments
+    /// ## Arguments
     /// 
     /// * `env` - The Soroban environment.
     /// * `admin` - The address of the contract administrator.
@@ -32,16 +32,16 @@ impl SinkContract {
         env.storage().instance().set(&DataKey::SinkMinimum, &1_000_000_i64);  // 100 kg
     }
 
-    /// Sinks CARBON tokens by burning them from the funder and minting equivalent CarbonSINK tokens to the recipient.
+    /// Sinks CARBON tokens by burning them from the `funder` and minting equivalent CarbonSINK tokens to the `recipient`.
     /// Quantizes the amount to kg resolution, checks minimum requirements, and handles authorization for CarbonSINK minting.
     /// Emits an event if the Mercury feature is enabled, otherwise performs the full sink operation.
     /// 
     /// The function has five balance properties:
     /// 
     /// 1. Total CARBON supply decreases by `amount` (via burn).
-    /// 2. Total CarbonSINK supply increases by `amount`` (via mint).
-    /// 3. Funder's CARBON balance debits by `amount``.
-    /// 4. Recipient's CarbonSINK balance credits by `amount``.
+    /// 2. Total CarbonSINK supply increases by `amount` (via mint).
+    /// 3. Funder's CARBON balance debits by `amount`.
+    /// 4. Recipient's CarbonSINK balance credits by `amount`.
     /// 5. Recipient's CarbonSINK balance is locked onto the account (deauthorized).
     /// 
     /// This manifests as an "X-shaped swap". It's a direct transfer: funder sends CARBON,
@@ -54,22 +54,22 @@ impl SinkContract {
     /// and the amount must be at least the minimum sink amount after quantization to kg resolution.
     /// 
     /// Common pitfalls: Ensure the funder has enough CARBON and the recipient has a valid trustline; otherwise,
-    /// the operation will fail with errors like InsufficientBalance or TrustlineLimitReached.
+    /// the operation will fail with errors like `InsufficientBalance` or `TrustlineLimitReached`.
     /// 
-    /// # Arguments
+    /// ## Arguments
     /// 
     /// * `env` - The Soroban environment.
-    /// * `funder` - The address funding the sink operation (must authorize the burn).
+    /// * `funder` - The address funding the sink operation (spends CARBON).
     /// * `recipient` - The address receiving the CarbonSINK tokens.
-    /// * `amount` - The amount of CARBON to sink (in micrograms).
-    /// * `project_id` - The symbol representing the project ID.
-    /// * `memo_text` - A string memo for the sink operation.
+    /// * `amount` - The amount of CARBON to sink in decigrams.
+    /// * `project_id` - The impact project ID (e.g. VCS1360).
+    /// * `memo_text` - A retirement reason or transaction reference.
     /// 
-    /// # Returns
+    /// ## Returns
     /// 
     /// A Result indicating success (unit type) or a `SinkError`.
     /// 
-    /// # Errors
+    /// ## Errors
     /// 
     /// * `ContractDeactivated` - The contract is not currently active, preventing this operation.
     /// * `AmountTooLow` - The quantized amount is below the minimum sink amount.
@@ -183,11 +183,11 @@ impl SinkContract {
     /// Retrieves the minimum sink amount required for a sink operation.
     /// Extends the instance TTL before returning the value.
     /// 
-    /// # Arguments
+    /// ## Arguments
     /// 
     /// * `env` - The Soroban environment.
     /// 
-    /// # Returns
+    /// ## Returns
     /// 
     /// The minimum sink amount as an i64.
     pub fn get_minimum_sink_amount(env: Env) -> i64 {
@@ -199,11 +199,11 @@ impl SinkContract {
     /// A deactivated contract that does not have a successor may be temporarily paused.
     /// Extends the instance TTL before returning the value.
     /// 
-    /// # Arguments
+    /// ## Arguments
     /// 
     /// * `env` - The Soroban environment.
     /// 
-    /// # Returns
+    /// ## Returns
     /// 
     /// A boolean indicating if the contract is active.
     pub fn is_active(env: Env) -> bool {
@@ -216,11 +216,11 @@ impl SinkContract {
     /// To find the latest active contract, call this function on each successor until it returns its own address.
     /// Extends the instance TTL before returning the value.
     /// 
-    /// # Arguments
+    /// ## Arguments
     /// 
     /// * `env` - The Soroban environment.
     /// 
-    /// # Returns
+    /// ## Returns
     /// 
     /// The successor address or the current contract address.
     pub fn get_contract_successor(env: Env) -> Address {
@@ -237,7 +237,7 @@ impl SinkContract {
     /// Sets the contract successor address for upgrades.
     /// Requires admin authorization and extends the instance TTL.
     /// 
-    /// # Arguments
+    /// ## Arguments
     /// 
     /// * `env` - The Soroban environment.
     /// * `successor` - The address of the successor contract.
@@ -252,16 +252,16 @@ impl SinkContract {
     /// Sets the minimum sink amount for sink operations.
     /// Requires admin authorization, validates the amount is non-negative, and extends the instance TTL.
     /// 
-    /// # Arguments
+    /// ## Arguments
     /// 
     /// * `env` - The Soroban environment.
     /// * `amount` - The new minimum sink amount (must be >= 0).
     /// 
-    /// # Returns
+    /// ## Returns
     /// 
     /// A Result indicating success or an error if the amount is negative.
     /// 
-    /// # Errors
+    /// ## Errors
     /// 
     /// * `NegativeAmount` - The provided amount must be positive.
     pub fn set_minimum_sink_amount(env: Env, amount: i64) -> Result<(), SinkError> {
@@ -280,11 +280,11 @@ impl SinkContract {
     /// This is called as part of the upgrade process, before setting a new SinkContract as the CarbonSINK SAC admin.
     /// Requires admin authorization and extends the instance TTL.
     /// 
-    /// # Arguments
+    /// ## Arguments
     /// 
     /// * `env` - The Soroban environment.
     /// 
-    /// # Returns
+    /// ## Returns
     /// 
     /// The address of the admin.
     pub fn reset_admin(env: Env) -> Address {
@@ -306,7 +306,7 @@ impl SinkContract {
     /// Activates the contract, allowing sink operations.
     /// Requires admin authorization and extends the instance TTL.
     /// 
-    /// # Arguments
+    /// ## Arguments
     /// 
     /// * `env` - The Soroban environment.
     pub fn activate(env: Env) {
@@ -319,7 +319,7 @@ impl SinkContract {
     /// Deactivates the contract, preventing sink operations.
     /// Requires admin authorization and extends the instance TTL.
     /// 
-    /// # Arguments
+    /// ## Arguments
     /// 
     /// * `env` - The Soroban environment.
     pub fn deactivate(env: Env) {
