@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: rustup update
-    - uses: stellar/stellar-cli@v23.1.4
+    - uses: stellar/stellar-cli@v23.4.0
     - run: make -C contracts/sink-carbon/ test
 
   release-sink-carbon:
